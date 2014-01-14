@@ -5,7 +5,7 @@ using namespace gbdt;
 
 int main(int argc, char *argv[]) {
   gConf.number_of_feature = 3;
-  gConf.max_depth = 2;
+  gConf.max_depth = 10;
 
   DataVector d;
   bool r = LoadDataFromFile("../../data/test.dat", &d);
