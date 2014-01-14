@@ -1,6 +1,6 @@
 // Author: qiyiping@gmail.com (Yiping Qi)
 
-#include <util.hpp>
+#include "util.hpp"
 
 namespace gbdt {
 
@@ -35,7 +35,7 @@ std::string JoinString(
   ++iter;
 
   for (; iter != parts.end(); ++iter) {
-    result += sep;
+    result += separator;
     result += *iter;
   }
 

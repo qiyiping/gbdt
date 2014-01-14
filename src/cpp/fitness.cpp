@@ -1,7 +1,7 @@
 // Author: qiyiping@gmail.com (Yiping Qi)
 
 #include "fitness.hpp"
-#include "node.hpp"
+#include "tree.hpp"
 #include <algorithm>
 #include <cassert>
 
@@ -9,7 +9,7 @@ namespace {
 struct TupleCompare {
   TupleCompare(int i): index(i) {}
 
-  bool operator (Tuple *t1, Tuple *t2, int index) {
+  bool operator () (const gbdt::Tuple *t1, const gbdt::Tuple *t2) {
     return t1->feature[index] < t2->feature[index];
   }
 
@@ -74,7 +74,7 @@ bool FindSplit(DataVector *data, int *index, ValueType *value) {
     }
 
     ValueType fitness0 = ss - s*s/c;
-    std::assert(fitness0 >= 0);
+    assert(fitness0 >= 0);
 
     s = 0;
     ss = 0;

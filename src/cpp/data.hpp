@@ -18,7 +18,6 @@ class Tuple {
  public:
   Tuple():
       feature(NULL),
-      number_of_feature(0),
       label(0),
       target(0),
       weight(0) {}
@@ -27,7 +26,7 @@ class Tuple {
     delete[] feature;
   }
 
-  static Tuple* FromString(const std::string &l, int n);
+  static Tuple* FromString(const std::string &l);
 
   std::string ToString() const;
 

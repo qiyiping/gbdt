@@ -23,7 +23,7 @@ void Node::Fit(DataVector *data,
 
   DataVector out[CHILDSIZE];
 
-  SplitData(data, node->index, node->value, out);
+  SplitData(*data, node->index, node->value, out);
   if (out[LT].empty() || out[GE].empty()) {
     node->leaf = true;
     node->pred = Average(*data);

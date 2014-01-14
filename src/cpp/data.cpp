@@ -33,9 +33,9 @@ std::string Tuple::ToString() const {
 Tuple* Tuple::FromString(const std::string &l) {
   Tuple* result = new Tuple();
   int n = gConf.number_of_feature;
-  result.feature = new ValueType[n];
+  result->feature = new ValueType[n];
   for (int i = 0; i < n; ++i) {
-    result.feature[i] = kUnknownValue;
+    result->feature[i] = kUnknownValue;
   }
 
   std::vector<std::string> tokens;
@@ -44,8 +44,8 @@ Tuple* Tuple::FromString(const std::string &l) {
     return NULL;
   }
 
-  result.label = boost::lexical_cast<ValueType>(tokens[0]);
-  result.weight = boost::lexical_cast<ValueType>(tokens[1]);
+  result->label = boost::lexical_cast<ValueType>(tokens[0]);
+  result->weight = boost::lexical_cast<ValueType>(tokens[1]);
 
   for (size_t i = 2; i < tokens.size(); ++i) {
     size_t found = tokens[i].find(kKVDelimiter);
@@ -59,7 +59,7 @@ Tuple* Tuple::FromString(const std::string &l) {
       continue;
     }
     ValueType value = boost::lexical_cast<ValueType>(tokens[i].substr(found+1));
-    result.feature[index] = value;
+    result->feature[index] = value;
   }
 
   return result;
