@@ -36,6 +36,9 @@ class Node {
  private:
   DISALLOW_COPY_AND_ASSIGN(Node);
 };
+
+typedef Node * RegressionTree;
+
 }
 
 #endif /* _TREE_H_ */

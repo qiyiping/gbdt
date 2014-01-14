@@ -11,15 +11,17 @@ int main(int argc, char *argv[]) {
   bool r = LoadDataFromFile("../../data/test.dat", &d);
   assert(r);
 
-  Node root;
+  RegressionTree root = new Node();
 
-  Node::Fit(&d, &root, 1);
+  Node::Fit(&d, root, 1);
 
   DataVector::iterator iter = d.begin();
   for ( ; iter != d.end(); ++iter) {
     std::cout << (*iter)->ToString() << std::endl;
-    std::cout << Node::Predict(&root, **iter) << std::endl;
+    std::cout << Node::Predict(root, **iter) << std::endl;
   }
+
+  delete root;
 
   CleanDataVector(&d);
   return 0;
