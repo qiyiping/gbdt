@@ -9,7 +9,6 @@
 
 namespace gbdt {
 typedef float ValueType;
-
 const ValueType kValueTypeMax = std::numeric_limits<ValueType>::max();
 const ValueType kValueTypeMin = std::numeric_limits<ValueType>::min();
 const ValueType kUnknownValue = kValueTypeMin;
@@ -49,6 +48,9 @@ class Configure {
 extern Configure gConf;
 
 typedef std::vector<Tuple *> DataVector;
+void CleanDataVector(DataVector *data);
+bool LoadDataFromFile(const std::string &path, DataVector *data);
+
 }
 
 #endif /* _DATA_H_ */

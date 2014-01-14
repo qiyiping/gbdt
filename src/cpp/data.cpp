@@ -1,6 +1,6 @@
 #include "data.hpp"
 #include <boost/lexical_cast.hpp>
-
+#include <fstream>
 #include <iostream>
 
 
@@ -47,6 +47,8 @@ Tuple* Tuple::FromString(const std::string &l) {
   result->label = boost::lexical_cast<ValueType>(tokens[0]);
   result->weight = boost::lexical_cast<ValueType>(tokens[1]);
 
+  result->target = result->label;
+
   for (size_t i = 2; i < tokens.size(); ++i) {
     size_t found = tokens[i].find(kKVDelimiter);
     if (found == std::string::npos) {
@@ -64,4 +66,27 @@ Tuple* Tuple::FromString(const std::string &l) {
 
   return result;
 }
+
+void CleanDataVector(DataVector *data) {
+  DataVector::iterator iter = data->begin();
+  for (; iter != data->end(); ++iter) {
+    delete *iter;
+  }
+}
+
+bool LoadDataFromFile(const std::string &path, DataVector *data) {
+  data->clear();
+  std::ifstream stream(path.c_str());
+  if (!stream) {
+    return false;
+  }
+
+  std::string l;
+  while(std::getline(stream, l)) {
+    data->push_back(Tuple::FromString(l));
+  }
+
+  return true;
+}
+
 }

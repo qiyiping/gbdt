@@ -73,7 +73,7 @@ bool FindSplit(DataVector *data, int *index, ValueType *value) {
       continue;
     }
 
-    ValueType fitness0 = ss - s*s/c;
+    ValueType fitness0 = c > 0? (ss - s*s/c) : 0;
     assert(fitness0 >= 0);
 
     s = 0;
@@ -106,9 +106,9 @@ bool FindSplit(DataVector *data, int *index, ValueType *value) {
       if (AlmostEqual(f1, f2))
         continue;
 
-      fitness1 = lss - ls*ls/lc;
+      fitness1 = lc > 0? (lss - ls*ls/lc) : 0;
       assert(fitness1 >= 0);
-      fitness2 = rss - rs*rs/rc;
+      fitness2 = rc > 0? (rss - rs*rs/rc) : 0;
       assert(fitness2 >= 0);
 
       ValueType fitness = fitness0 + fitness1 + fitness2;

@@ -1,24 +1,24 @@
-#include "data.hpp"
+#include "tree.hpp"
 #include <iostream>
 #include <cassert>
-
 using namespace gbdt;
 
 int main(int argc, char *argv[]) {
-  std::string l = "1 2 0:10 1:100";
   gConf.number_of_feature = 3;
-  gConf.max_depth = 4;
-
-  Tuple *t = Tuple::FromString(l);
-
-  std::cout << t->ToString() << std::endl;
+  gConf.max_depth = 2;
 
   DataVector d;
   bool r = LoadDataFromFile("../../data/test.dat", &d);
   assert(r);
+
+  Node root;
+
+  Node::Fit(&d, &root, 1);
+
   DataVector::iterator iter = d.begin();
   for ( ; iter != d.end(); ++iter) {
     std::cout << (*iter)->ToString() << std::endl;
+    std::cout << Node::Predict(&root, **iter) << std::endl;
   }
 
   CleanDataVector(&d);
