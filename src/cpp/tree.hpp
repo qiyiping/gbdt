@@ -26,6 +26,8 @@ class Node {
                   Node *node,
                   int depth);
 
+  static ValueType Predict(Node *root, const Tuple &t);
+
   Node *child[CHILDSIZE];
   int index;
   ValueType value;

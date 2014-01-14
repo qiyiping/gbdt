@@ -21,24 +21,38 @@ void Node::Fit(DataVector *data,
     return;
   }
 
-  DataVector out[Node::CHILDSIZE];
+  DataVector out[CHILDSIZE];
 
   SplitData(data, node->index, node->value, out);
-  if (out[Node::LT].empty() || out[Node::GE].empty()) {
+  if (out[LT].empty() || out[GE].empty()) {
     node->leaf = true;
     node->pred = Average(*data);
     return;
   }
 
-  node->child[Node::LT] = new Node();
-  node->child[Node::GE] = new Node();
+  node->child[LT] = new Node();
+  node->child[GE] = new Node();
 
-  Fit(&out[Node::LT], node->child[Node::LT], depth+1);
-  Fit(&out[Node::GE], node->child[Node::GE], depth+1);
+  Fit(&out[LT], node->child[LT], depth+1);
+  Fit(&out[GE], node->child[GE], depth+1);
 
-  if (!out[Node::UNKNOWN].empty()) {
-    node->child[Node::UNKNOWN] = new Node();
-    Fit(&out[Node::UNKNOWN], node->child[Node::UNKNOWN], depth+1);
+  if (!out[UNKNOWN].empty()) {
+    node->child[UNKNOWN] = new Node();
+    Fit(&out[UNKNOWN], node->child[UNKNOWN], depth+1);
   }
 }
+
+ValueType Node::Predict(Node *root, const Tuple &t) {
+  if (root->leaf) {
+    return root->pred;
+  }
+  if (t.feature[root->index] == kUnknownValue) {
+    return Predict(root->child[UNKNOWN], t);
+  } else if (t.feature[root->index] < root->value) {
+    return Predict(root->child[LT], t);
+  } else {
+    return Predict(root->child[GE], t);
+  }
+}
+
 }
