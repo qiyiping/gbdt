@@ -14,6 +14,10 @@ class Node {
     child[LT] = NULL;
     child[GE] = NULL;
     child[UNKNOWN] = NULL;
+    index = -1;
+    value = 0;
+    leaf = false;
+    pred = 0;
   }
 
   ~Node() {
@@ -37,7 +41,26 @@ class Node {
   DISALLOW_COPY_AND_ASSIGN(Node);
 };
 
-typedef Node * RegressionTree;
+class RegressionTree {
+ public:
+  RegressionTree(): root(NULL) {}
+  ~RegressionTree() { delete root; }
+
+  void Fit(DataVector *data);
+  ValueType Predict(const Tuple &t) const;
+
+ private:
+  static void Fit(DataVector *data,
+                  Node *node,
+                  int depth);
+
+  static ValueType Predict(const Node *node, const Tuple &t);
+
+ private:
+  Node *root;
+
+  DISALLOW_COPY_AND_ASSIGN(RegressionTree);
+};
 
 }
 

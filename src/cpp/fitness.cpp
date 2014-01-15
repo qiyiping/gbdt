@@ -4,6 +4,7 @@
 #include "tree.hpp"
 #include <algorithm>
 #include <cassert>
+#include <cmath>
 
 namespace {
 struct TupleCompare {
@@ -21,7 +22,7 @@ namespace gbdt {
 
 bool AlmostEqual(ValueType v1, ValueType v2) {
   ValueType diff = v1 > v2? (v1-v2) : (v2-v1);
-  if (diff < 1.0e-5)
+  if (diff < 1.0e-4)
     return true;
   return false;
 }
@@ -53,6 +54,7 @@ ValueType Average(const DataVector & data) {
 
 bool FindSplit(DataVector *data, int *index, ValueType *value) {
   int n = gConf.number_of_feature;
+  int m = data->size();
   ValueType best_fitness = kValueTypeMax;
 
   for (int i = 0; i < n; ++i) {
@@ -62,24 +64,24 @@ bool FindSplit(DataVector *data, int *index, ValueType *value) {
     ValueType ss = 0;
     ValueType c = 0;
 
-    while ((*data)[unknown]->feature[i] == kUnknownValue && unknown < n) {
+    while ((*data)[unknown]->feature[i] == kUnknownValue && unknown < m) {
       unknown++;
       s += (*data)[unknown]->target * (*data)[unknown]->weight;
       ss += Squared((*data)[unknown]->target) * (*data)[unknown]->weight;
       c += (*data)[unknown]->weight;
     }
 
-    if (unknown == n) {
+    if (unknown == m) {
       continue;
     }
 
     ValueType fitness0 = c > 0? (ss - s*s/c) : 0;
-    assert(fitness0 >= 0);
+    assert(fitness0 >= 0 || AlmostEqual(fitness0, 0));
 
     s = 0;
     ss = 0;
     c = 0;
-    for (int j = unknown; j < n; ++j) {
+    for (int j = unknown; j < m; ++j) {
       s += (*data)[j]->target * (*data)[j]->weight;
       ss += Squared((*data)[j]->target) * (*data)[j]->weight;
       c += (*data)[j]->weight;
@@ -88,7 +90,7 @@ bool FindSplit(DataVector *data, int *index, ValueType *value) {
     ValueType ls = 0, lss = 0, lc = 0;
     ValueType rs = s, rss = ss, rc = c;
     ValueType fitness1 = 0, fitness2 = 0;
-    for (int j = unknown; j < n-1; ++j) {
+    for (int j = unknown; j < m-1; ++j) {
       s = (*data)[j]->target * (*data)[j]->weight;
       ss = Squared((*data)[j]->target) * (*data)[j]->weight;
       c = (*data)[j]->weight;
@@ -107,9 +109,9 @@ bool FindSplit(DataVector *data, int *index, ValueType *value) {
         continue;
 
       fitness1 = lc > 0? (lss - ls*ls/lc) : 0;
-      assert(fitness1 >= 0);
+      assert(fitness1 >= 0 || AlmostEqual(fitness1, 0));
       fitness2 = rc > 0? (rss - rs*rs/rc) : 0;
-      assert(fitness2 >= 0);
+      assert(fitness2 >= 0 || AlmostEqual(fitness2, 0));
 
       ValueType fitness = fitness0 + fitness1 + fitness2;
       if (best_fitness > fitness) {
@@ -133,6 +135,17 @@ void SplitData(const DataVector &data, int index, ValueType value, DataVector *o
       output[Node::GE].push_back(data[i]);
     }
   }
+}
+
+ValueType RMSE(const DataVector &data, const PredictVector &predict) {
+  assert(data.size() == predict.size());
+  ValueType s = 0;
+
+  for (size_t i = 0; i < data.size(); ++i) {
+    s += Squared(predict[i] - data[i]->label);
+  }
+
+  return std::sqrt(s/data.size());
 }
 
 }

@@ -51,6 +51,7 @@ typedef std::vector<Tuple *> DataVector;
 void CleanDataVector(DataVector *data);
 bool LoadDataFromFile(const std::string &path, DataVector *data);
 
+typedef std::vector<ValueType> PredictVector;
 }
 
 #endif /* _DATA_H_ */

@@ -11,6 +11,8 @@ ValueType Average(const DataVector & data);
 bool FindSplit(DataVector *data, int *index, ValueType *value);
 void SplitData(const DataVector &data, int index, ValueType value, DataVector *output);
 
+ValueType RMSE(const DataVector &data, const PredictVector &predict);
+
 template <typename T>
 T Squared(const T &v) {
   return v * v;
