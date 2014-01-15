@@ -1,7 +1,7 @@
-header_files = data.hpp fitness.hpp tree.hpp util.hpp
-object_files = data.o fitness.o tree.o util.o config.o
+header_files = data.hpp fitness.hpp tree.hpp util.hpp config.hpp gbdt.hpp
+object_files = data.o fitness.o tree.o util.o config.o gbdt.o
 
-tests = data_unittest tree_unittest
+tests = data_unittest tree_unittest gbdt_unittest
 
 CXX = g++
 #CXXFLAGS = -Wall -Wextra -Wconversion -Werror -pedantic -O0 -g
@@ -24,6 +24,9 @@ util.o: $(header_files) util.cpp
 config.o: $(header_files) config.cpp
 	$(CXX) -c $(CXXFLAGS) config.cpp
 
+gbdt.o: $(header_files) gbdt.cpp
+	$(CXX) -c $(CXXFLAGS) gbdt.cpp
+
 libgbdt.a: $(object_files)
 	ar rcs libgbdt.a $(object_files)
 
@@ -35,6 +38,9 @@ data_unittest: libgbdt.a data_unittest.cpp
 
 tree_unittest: libgbdt.a tree_unittest.cpp
 	$(CXX) $(CXXFLAGS) -o tree_unittest tree_unittest.cpp libgbdt.a
+
+gbdt_unittest: libgbdt.a gbdt_unittest.cpp
+	$(CXX) $(CXXFLAGS) -o gbdt_unittest gbdt_unittest.cpp libgbdt.a
 
 clean:
 	rm $(object_files) $(tests) libgbdt.a
