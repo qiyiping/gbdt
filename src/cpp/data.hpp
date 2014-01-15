@@ -5,6 +5,7 @@
 #include <limits>
 #include <string>
 #include <vector>
+#include "config.hpp"
 #include "util.hpp"
 
 namespace gbdt {
@@ -38,14 +39,6 @@ class Tuple {
  private:
   DISALLOW_COPY_AND_ASSIGN(Tuple);
 };
-
-class Configure {
- public:
-  int number_of_feature;
-  int max_depth;
-};
-
-extern Configure gConf;
 
 typedef std::vector<Tuple *> DataVector;
 void CleanDataVector(DataVector *data);

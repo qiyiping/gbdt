@@ -7,7 +7,6 @@
 namespace gbdt {
 static const std::string kItemDelimiter = " ";
 static const std::string kKVDelimiter = ":";
-Configure gConf;
 
 std::string Tuple::ToString() const {
   if (feature == NULL)

@@ -1,5 +1,5 @@
 header_files = data.hpp fitness.hpp tree.hpp util.hpp
-object_files = data.o fitness.o tree.o util.o
+object_files = data.o fitness.o tree.o util.o config.o
 
 tests = data_unittest tree_unittest
 
@@ -20,6 +20,9 @@ tree.o: $(header_files) tree.cpp
 
 util.o: $(header_files) util.cpp
 	$(CXX) -c $(CXXFLAGS) util.cpp
+
+config.o: $(header_files) config.cpp
+	$(CXX) -c $(CXXFLAGS) config.cpp
 
 libgbdt.a: $(object_files)
 	ar rcs libgbdt.a $(object_files)

@@ -145,7 +145,7 @@ ValueType RMSE(const DataVector &data, const PredictVector &predict) {
     s += Squared(predict[i] - data[i]->label);
   }
 
-  return std::sqrt(s/data.size());
+  return std::sqrt(s / data.size());
 }
 
 }
