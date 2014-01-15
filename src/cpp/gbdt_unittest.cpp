@@ -3,6 +3,7 @@
 #include <iostream>
 #include <cassert>
 #include <boost/lexical_cast.hpp>
+#include "time.hpp"
 
 using namespace gbdt;
 
@@ -30,7 +31,9 @@ int main(int argc, char *argv[]) {
 
   GBDT gbdt;
 
+  Elapsed elapsed;
   gbdt.Fit(&d);
+  std::cout << "fit time: " << elapsed.Tell() << std::endl;
 
   DataVector::iterator iter = d.begin();
   PredictVector predict;

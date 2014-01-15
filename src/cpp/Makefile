@@ -1,4 +1,4 @@
-header_files = data.hpp fitness.hpp tree.hpp util.hpp config.hpp gbdt.hpp
+header_files = data.hpp fitness.hpp tree.hpp util.hpp config.hpp gbdt.hpp time.hpp
 object_files = data.o fitness.o tree.o util.o config.o gbdt.o
 
 tests = data_unittest tree_unittest gbdt_unittest
