@@ -40,8 +40,8 @@ int main(int argc, char *argv[]) {
   for ( ; iter != d.end(); ++iter) {
     ValueType p = gbdt.Predict(**iter);
     predict.push_back(p);
-    std::cout << (*iter)->ToString() << std::endl
-              << p << std::endl;
+    // std::cout << (*iter)->ToString() << std::endl
+    //           << p << std::endl;
   }
 
   std::cout << "rmse: " << RMSE(d, predict) << std::endl;

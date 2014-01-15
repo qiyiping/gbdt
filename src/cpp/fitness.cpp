@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cmath>
+#include <iostream>
 
 namespace {
 struct TupleCompare {
@@ -22,7 +23,7 @@ namespace gbdt {
 
 bool AlmostEqual(ValueType v1, ValueType v2) {
   ValueType diff = v1 > v2? (v1-v2) : (v2-v1);
-  if (diff < 1.0e-4)
+  if (diff < 1.0e-5)
     return true;
   return false;
 }
@@ -55,14 +56,14 @@ ValueType Average(const DataVector & data) {
 bool FindSplit(DataVector *data, int *index, ValueType *value) {
   int n = gConf.number_of_feature;
   int m = data->size();
-  ValueType best_fitness = kValueTypeMax;
+  double best_fitness = std::numeric_limits<double>::max();
 
   for (int i = 0; i < n; ++i) {
     std::sort(data->begin(), data->end(), TupleCompare(i));
     int unknown = 0;
-    ValueType s = 0;
-    ValueType ss = 0;
-    ValueType c = 0;
+    double s = 0;
+    double ss = 0;
+    double c = 0;
 
     while ((*data)[unknown]->feature[i] == kUnknownValue && unknown < m) {
       unknown++;
@@ -75,8 +76,11 @@ bool FindSplit(DataVector *data, int *index, ValueType *value) {
       continue;
     }
 
-    ValueType fitness0 = c > 0? (ss - s*s/c) : 0;
-    assert(fitness0 >= 0 || AlmostEqual(fitness0, 0));
+    double fitness0 = c > 1? (ss - s*s/c) : 0;
+    if (fitness0 < 0) {
+      std::cerr << "fitness0 < 0: " << fitness0 << std::endl;
+      fitness0 = 0;
+    }
 
     s = 0;
     ss = 0;
@@ -87,9 +91,9 @@ bool FindSplit(DataVector *data, int *index, ValueType *value) {
       c += (*data)[j]->weight;
     }
 
-    ValueType ls = 0, lss = 0, lc = 0;
-    ValueType rs = s, rss = ss, rc = c;
-    ValueType fitness1 = 0, fitness2 = 0;
+    double ls = 0, lss = 0, lc = 0;
+    double rs = s, rss = ss, rc = c;
+    double fitness1 = 0, fitness2 = 0;
     for (int j = unknown; j < m-1; ++j) {
       s = (*data)[j]->target * (*data)[j]->weight;
       ss = Squared((*data)[j]->target) * (*data)[j]->weight;
@@ -108,12 +112,20 @@ bool FindSplit(DataVector *data, int *index, ValueType *value) {
       if (AlmostEqual(f1, f2))
         continue;
 
-      fitness1 = lc > 0? (lss - ls*ls/lc) : 0;
-      assert(fitness1 >= 0 || AlmostEqual(fitness1, 0));
-      fitness2 = rc > 0? (rss - rs*rs/rc) : 0;
-      assert(fitness2 >= 0 || AlmostEqual(fitness2, 0));
+      fitness1 = lc > 1? (lss - ls*ls/lc) : 0;
+      if (fitness1 < 0) {
+        std::cerr << "fitness1 < 0: " << fitness1 << std::endl;
+        fitness1 = 0;
+      }
 
-      ValueType fitness = fitness0 + fitness1 + fitness2;
+      fitness2 = rc > 1? (rss - rs*rs/rc) : 0;
+      if (fitness2 < 0) {
+        std::cerr << "fitness2 < 0: " << fitness2 << std::endl;
+        fitness2 = 0;
+      }
+
+
+      double fitness = fitness0 + fitness1 + fitness2;
       if (best_fitness > fitness) {
         best_fitness = fitness;
         *index = i;
@@ -122,7 +134,7 @@ bool FindSplit(DataVector *data, int *index, ValueType *value) {
     }
   }
 
-  return best_fitness != kValueTypeMax;
+  return best_fitness != std::numeric_limits<double>::max();
 }
 
 void SplitData(const DataVector &data, int index, ValueType value, DataVector *output) {
@@ -137,9 +149,9 @@ void SplitData(const DataVector &data, int index, ValueType value, DataVector *o
   }
 }
 
-ValueType RMSE(const DataVector &data, const PredictVector &predict) {
+double RMSE(const DataVector &data, const PredictVector &predict) {
   assert(data.size() == predict.size());
-  ValueType s = 0;
+  double s = 0;
 
   for (size_t i = 0; i < data.size(); ++i) {
     s += Squared(predict[i] - data[i]->label);

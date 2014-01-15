@@ -23,7 +23,7 @@ void GBDT::Fit(DataVector *d) {
     trees[i].Fit(d);
 
     DataVector::iterator iter = d->begin();
-    ValueType s = 0;
+    double s = 0;
     for ( ; iter != d->end(); ++iter) {
       ValueType p = trees[i].Predict(**iter);
       (*iter)->target -= gConf.shrinkage * p;
