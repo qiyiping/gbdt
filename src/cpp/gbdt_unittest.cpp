@@ -26,7 +26,7 @@ int main(int argc, char *argv[]) {
   }
 
   DataVector d;
-  bool r = LoadDataFromFile("../../data/test.dat", &d);
+  bool r = LoadDataFromFile("../../data/train.dat", &d);
   assert(r);
 
   GBDT gbdt;
@@ -35,17 +35,25 @@ int main(int argc, char *argv[]) {
   gbdt.Fit(&d);
   std::cout << "fit time: " << elapsed.Tell() << std::endl;
 
-  DataVector::iterator iter = d.begin();
+  DataVector d2;
+  r = LoadDataFromFile("../../data/test.dat", &d2);
+  assert(r);
+
+  elapsed.Reset();
+  DataVector::iterator iter = d2.begin();
   PredictVector predict;
-  for ( ; iter != d.end(); ++iter) {
+  for ( ; iter != d2.end(); ++iter) {
     ValueType p = gbdt.Predict(**iter);
     predict.push_back(p);
     // std::cout << (*iter)->ToString() << std::endl
     //           << p << std::endl;
   }
 
-  std::cout << "rmse: " << RMSE(d, predict) << std::endl;
+  std::cout << "predict time: " << elapsed.Tell() << std::endl;
 
+  std::cout << "rmse: " << RMSE(d2, predict) << std::endl;
+
+  CleanDataVector(&d2);
   CleanDataVector(&d);
   return 0;
 }

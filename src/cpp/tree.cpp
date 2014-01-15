@@ -69,4 +69,12 @@ ValueType RegressionTree::Predict(const Tuple &t) const {
   return Predict(root, t);
 }
 
+std::string RegressionTree::Save() const {
+  return std::string();
+}
+
+void RegressionTree::Load(const std::string &s) {
+  delete root;
+}
+
 }

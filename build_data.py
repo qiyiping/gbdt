@@ -2,7 +2,7 @@ import random
 import math
 
 
-for i in range(0, 100000):
+for i in range(0, 10000):
     x = random.randint(-10, 10)
     y = random.randint(-10, 10)
     z = random.randint(-10, 10)

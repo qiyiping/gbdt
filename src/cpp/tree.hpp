@@ -49,6 +49,9 @@ class RegressionTree {
   void Fit(DataVector *data);
   ValueType Predict(const Tuple &t) const;
 
+  std::string Save() const;
+  void Load(const std::string &s);
+
  private:
   static void Fit(DataVector *data,
                   Node *node,
