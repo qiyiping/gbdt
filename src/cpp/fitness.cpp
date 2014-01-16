@@ -58,18 +58,30 @@ bool FindSplit(DataVector *data, int *index, ValueType *value) {
   int m = data->size();
   double best_fitness = std::numeric_limits<double>::max();
 
+  std::vector<int> fv;
   for (int i = 0; i < n; ++i) {
+    fv.push_back(i);
+  }
+
+  int fn = n;
+  if (gConf.feature_sample_ratio < 1) {
+    fn = (int) (n*gConf.feature_sample_ratio);
+    std::random_shuffle(fv.begin(), fv.end());
+  }
+
+  for (int k = 0; k < fn; ++k) {
+    int i = fv[k];
     std::sort(data->begin(), data->end(), TupleCompare(i));
     int unknown = 0;
     double s = 0;
     double ss = 0;
     double c = 0;
 
-    while ((*data)[unknown]->feature[i] == kUnknownValue && unknown < m) {
-      unknown++;
+    while (unknown < m && (*data)[unknown]->feature[i] == kUnknownValue) {
       s += (*data)[unknown]->target * (*data)[unknown]->weight;
       ss += Squared((*data)[unknown]->target) * (*data)[unknown]->weight;
       c += (*data)[unknown]->weight;
+      unknown++;
     }
 
     if (unknown == m) {

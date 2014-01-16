@@ -8,9 +8,14 @@
 #include "time.hpp"
 #include "auc.hpp"
 
+#include <cstdlib>
+#include <ctime>
+
 using namespace gbdt;
 
 int main(int argc, char *argv[]) {
+  std::srand ( unsigned ( std::time(0) ) );
+
   gConf.number_of_feature = 66;
   gConf.max_depth = 4;
   gConf.iterations = 10;
@@ -31,6 +36,10 @@ int main(int argc, char *argv[]) {
 
   if (argc > 5) {
     gConf.shrinkage = boost::lexical_cast<float>(argv[5]);
+  }
+
+  if (argc > 6) {
+    gConf.feature_sample_ratio = boost::lexical_cast<float>(argv[6]);
   }
 
   DataVector d;

@@ -10,6 +10,9 @@ class Configure {
   int max_depth;          // max depth for each tree
   int iterations;         // number of trees in gbdt
   float shrinkage;        // shrinkage parameter
+  float feature_sample_ratio; // portion of features to be splited
+
+  Configure(): feature_sample_ratio(1) {}
 };
 
 extern Configure gConf;
