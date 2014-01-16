@@ -20,7 +20,7 @@ std::string JoinString(
     const std::string& separator);
 
 size_t SplitString(const std::string& str,
-                   const std::string& delimiters,
+                   const std::string& separator,
                    std::vector<std::string>* tokens);
 }
 

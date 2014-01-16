@@ -9,6 +9,9 @@ class GBDT {
   GBDT(): trees(NULL) {}
   void Fit(DataVector *d);
   ValueType Predict(const Tuple &t) const;
+
+  std::string Save() const;
+  void Load(const std::string &s);
  private:
   RegressionTree *trees;
 };

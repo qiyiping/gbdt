@@ -1,6 +1,7 @@
 #include "gbdt.hpp"
 #include "fitness.hpp"
 #include <iostream>
+#include <fstream>
 #include <cassert>
 #include <boost/lexical_cast.hpp>
 #include "time.hpp"
@@ -35,6 +36,11 @@ int main(int argc, char *argv[]) {
   gbdt.Fit(&d);
   std::cout << "fit time: " << elapsed.Tell() << std::endl;
 
+  std::ofstream model_output("../../data/gbdt.model");
+  model_output << gbdt.Save();
+  GBDT gbdt2;
+  gbdt2.Load(gbdt.Save());
+
   DataVector d2;
   r = LoadDataFromFile("../../data/test.dat", &d2);
   assert(r);
@@ -43,10 +49,10 @@ int main(int argc, char *argv[]) {
   DataVector::iterator iter = d2.begin();
   PredictVector predict;
   for ( ; iter != d2.end(); ++iter) {
-    ValueType p = gbdt.Predict(**iter);
+    ValueType p = gbdt2.Predict(**iter);
     predict.push_back(p);
-    // std::cout << (*iter)->ToString() << std::endl
-    //           << p << std::endl;
+    std::cout << (*iter)->ToString() << std::endl
+              << p << "," << gbdt.Predict(**iter) << std::endl;
   }
 
   std::cout << "predict time: " << elapsed.Tell() << std::endl;

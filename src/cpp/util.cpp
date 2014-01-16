@@ -5,19 +5,19 @@
 namespace gbdt {
 
 size_t SplitString(const std::string& str,
-                   const std::string& delimiters,
+                   const std::string& separator,
                    std::vector<std::string>* tokens) {
   tokens->clear();
 
-  size_t start = str.find_first_not_of(delimiters);
-  while (start != std::string::npos) {
-    size_t end = str.find_first_of(delimiters, start + 1);
+  size_t start = 0;
+  while (start < str.length()) {
+    size_t end = str.find(separator, start);
     if (end == std::string::npos) {
       tokens->push_back(str.substr(start));
       break;
     } else {
       tokens->push_back(str.substr(start, end - start));
-      start = str.find_first_not_of(delimiters, end + 1);
+      start = end + separator.length();
     }
   }
 

@@ -4,6 +4,8 @@
 #define _TREE_H_
 
 #include "data.hpp"
+#include <map>
+#include <vector>
 
 namespace gbdt {
 class Node {
@@ -58,6 +60,10 @@ class RegressionTree {
                   int depth);
 
   static ValueType Predict(const Node *node, const Tuple &t);
+
+  static void SaveAux(const Node *node,
+                      std::vector<const Node *> *nodes,
+                      std::map<const void *, int> *position_map);
 
  private:
   Node *root;
