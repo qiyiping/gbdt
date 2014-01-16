@@ -4,24 +4,25 @@
 #include "fitness.hpp"
 #include "util.hpp"
 #include <boost/lexical_cast.hpp>
-
+#include <cassert>
 #include <iostream>
 
 namespace gbdt {
 void RegressionTree::Fit(DataVector *data,
+                         size_t len,
                          Node *node,
                          int depth) {
   int max_depth = gConf.max_depth;
 
-  if (max_depth == depth || Same(*data)) {
+  node->pred = Average(*data, len);
+
+  if (max_depth == depth || Same(*data, len)) {
     node->leaf = true;
-    node->pred = Average(*data);
     return;
   }
 
-  if (!FindSplit(data, &(node->index), &(node->value))) {
+  if (!FindSplit(data, len, &(node->index), &(node->value))) {
     node->leaf = true;
-    node->pred = Average(*data);
     return;
   }
 
@@ -29,10 +30,10 @@ void RegressionTree::Fit(DataVector *data,
 
   DataVector out[Node::CHILDSIZE];
 
-  SplitData(*data, node->index, node->value, out);
+  SplitData(*data, len, node->index, node->value, out);
   if (out[Node::LT].empty() || out[Node::GE].empty()) {
     node->leaf = true;
-    node->pred = Average(*data);
+    node->pred = Average(*data, len);
     return;
   }
 
@@ -53,7 +54,11 @@ ValueType RegressionTree::Predict(const Node *root, const Tuple &t) {
     return root->pred;
   }
   if (t.feature[root->index] == kUnknownValue) {
-    return Predict(root->child[Node::UNKNOWN], t);
+    if (root->child[Node::UNKNOWN]) {
+      return Predict(root->child[Node::UNKNOWN], t);
+    } else {
+      return root->pred;
+    }
   } else if (t.feature[root->index] < root->value) {
     return Predict(root->child[Node::LT], t);
   } else {
@@ -61,10 +66,11 @@ ValueType RegressionTree::Predict(const Node *root, const Tuple &t) {
   }
 }
 
-void RegressionTree::Fit(DataVector *data) {
+void RegressionTree::Fit(DataVector *data, size_t len) {
+  assert(data->size() >= len);
   delete root;
   root = new Node();
-  Fit(data, root, 0);
+  Fit(data, len, root, 0);
 }
 
 ValueType RegressionTree::Predict(const Tuple &t) const {

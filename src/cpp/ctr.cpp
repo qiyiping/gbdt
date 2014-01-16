@@ -11,20 +11,24 @@
 #include <cstdlib>
 #include <ctime>
 
+#ifdef USE_OPENMP
 #include <omp.h>
+#endif
 
 using namespace gbdt;
 
 int main(int argc, char *argv[]) {
   std::srand ( unsigned ( std::time(0) ) );
 
+#ifdef USE_OPENMP
   const int threads_wanted = 4;
   omp_set_num_threads(threads_wanted);
+#endif
 
   gConf.number_of_feature = 66;
   gConf.max_depth = 4;
   gConf.iterations = 10;
-  gConf.shrinkage = 0.1;
+  gConf.shrinkage = 0.1F;
 
   if (argc < 3) return -1;
 
@@ -45,6 +49,10 @@ int main(int argc, char *argv[]) {
 
   if (argc > 6) {
     gConf.feature_sample_ratio = boost::lexical_cast<float>(argv[6]);
+  }
+
+  if (argc > 7) {
+    gConf.data_sample_ratio = boost::lexical_cast<float>(argv[7]);
   }
 
   DataVector d;

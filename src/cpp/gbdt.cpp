@@ -5,6 +5,11 @@
 #include <iostream>
 #include <cmath>
 #include <cassert>
+#include <algorithm>
+
+#ifdef USE_OPENMP
+#include <parallel/algorithm>  // openmp
+#endif
 
 namespace gbdt {
 ValueType GBDT::Predict(const Tuple &t) const {
@@ -22,19 +27,35 @@ ValueType GBDT::Predict(const Tuple &t) const {
 void GBDT::Fit(DataVector *d) {
   delete[] trees;
   trees = new RegressionTree[gConf.iterations];
+
+  size_t samples = d->size();
+  if (gConf.data_sample_ratio < 1) {
+    samples = (size_t)(d->size() * gConf.data_sample_ratio);
+  }
+
   for (int i = 0; i < gConf.iterations; ++i) {
-    trees[i].Fit(d);
+    if (samples < d->size()) {
+#ifndef USE_OPENMP
+      std::random_shuffle(d->begin(), d->end());
+#else
+      __gnu_parallel::random_shuffle(d->begin(), d->end());
+#endif
+    }
+
+    trees[i].Fit(d, samples);
 
     DataVector::iterator iter = d->begin();
     double s = 0;
+    double c = 0;
     for ( ; iter != d->end(); ++iter) {
       ValueType p = trees[i].Predict(**iter);
       (*iter)->target -= gConf.shrinkage * p;
-      s += Squared((*iter)->target);
+      s += Squared((*iter)->target) * (*iter)->weight;
+      c += (*iter)->weight;
     }
 
     std::cout  << "iteration: " << i << std::endl
-               << "rmse: " << std::sqrt(s/d->size()) << std::endl;
+               << "rmse: " << std::sqrt(s / c) << std::endl;
   }
 }
 

@@ -11,8 +11,9 @@ class Configure {
   int iterations;         // number of trees in gbdt
   float shrinkage;        // shrinkage parameter
   float feature_sample_ratio; // portion of features to be splited
+  float data_sample_ratio;// portion of data to be fitted in each iteration
 
-  Configure(): feature_sample_ratio(1) {}
+  Configure(): feature_sample_ratio(1), data_sample_ratio(1) {}
 };
 
 extern Configure gConf;

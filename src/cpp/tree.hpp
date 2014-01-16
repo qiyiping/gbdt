@@ -48,7 +48,9 @@ class RegressionTree {
   RegressionTree(): root(NULL) {}
   ~RegressionTree() { delete root; }
 
-  void Fit(DataVector *data);
+  void Fit(DataVector *data) { Fit(data, data->size()); }
+  void Fit(DataVector *data, size_t len);
+
   ValueType Predict(const Tuple &t) const;
 
   std::string Save() const;
@@ -56,6 +58,11 @@ class RegressionTree {
 
  private:
   static void Fit(DataVector *data,
+                  Node *node,
+                  int depth) { Fit(data, data->size(), node, depth); }
+
+  static void Fit(DataVector *data,
+                  size_t len,
                   Node *node,
                   int depth);
 
