@@ -4,6 +4,7 @@
 #define _AUC_H_
 #include "data.hpp"
 #include <vector>
+#include <algorithm>
 
 namespace gbdt {
 // imported from mahout:
@@ -20,9 +21,9 @@ class Auc {
       negative_scores.push_back(score);
   }
 
-  ValueType CalculateAuc() const {
-    std::sort(negative_scores);
-    std::sort(positive_scores);
+  ValueType CalculateAuc() {
+    std::sort(negative_scores.begin(), negative_scores.end());
+    std::sort(positive_scores.begin(), positive_scores.end());
 
     ValueType n0 = negative_scores.size();
     ValueType n1 = positive_scores.size();
@@ -38,8 +39,8 @@ class Auc {
     ValueType rankSum = 0;
     while (i0 < n0 && i1 < n1) {
 
-      ValueType v0 = negative_scores.[i0];
-      ValueType v1 = positive_scores.[i1];
+      ValueType v0 = negative_scores[i0];
+      ValueType v1 = positive_scores[i1];
 
       if (v0 < v1) {
         i0++;

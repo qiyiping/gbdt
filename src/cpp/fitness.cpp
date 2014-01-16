@@ -78,7 +78,7 @@ bool FindSplit(DataVector *data, int *index, ValueType *value) {
 
     double fitness0 = c > 1? (ss - s*s/c) : 0;
     if (fitness0 < 0) {
-      std::cerr << "fitness0 < 0: " << fitness0 << std::endl;
+      // std::cerr << "fitness0 < 0: " << fitness0 << std::endl;
       fitness0 = 0;
     }
 
@@ -114,13 +114,13 @@ bool FindSplit(DataVector *data, int *index, ValueType *value) {
 
       fitness1 = lc > 1? (lss - ls*ls/lc) : 0;
       if (fitness1 < 0) {
-        std::cerr << "fitness1 < 0: " << fitness1 << std::endl;
+        // std::cerr << "fitness1 < 0: " << fitness1 << std::endl;
         fitness1 = 0;
       }
 
       fitness2 = rc > 1? (rss - rs*rs/rc) : 0;
       if (fitness2 < 0) {
-        std::cerr << "fitness2 < 0: " << fitness2 << std::endl;
+        // std::cerr << "fitness2 < 0: " << fitness2 << std::endl;
         fitness2 = 0;
       }
 

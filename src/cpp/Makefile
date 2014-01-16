@@ -7,7 +7,7 @@ CXX = g++
 #CXXFLAGS = -Wall -Wextra -Wconversion -Werror -pedantic -O0 -g
 CXXFLAGS = -Wall -Wextra -Wconversion -pedantic -O0 -g
 
-all: libgbdt.a $(tests)
+all: libgbdt.a $(tests) ctr
 
 data.o: $(header_files) data.cpp
 	$(CXX) -c $(CXXFLAGS) data.cpp
@@ -30,6 +30,9 @@ gbdt.o: $(header_files) gbdt.cpp
 libgbdt.a: $(object_files)
 	ar rcs libgbdt.a $(object_files)
 
+ctr: libgbdt.a ctr.cpp
+	$(CXX) $(CXXFLAGS) -o ctr ctr.cpp libgbdt.a
+
 
 
 
@@ -43,4 +46,4 @@ gbdt_unittest: libgbdt.a gbdt_unittest.cpp
 	$(CXX) $(CXXFLAGS) -o gbdt_unittest gbdt_unittest.cpp libgbdt.a
 
 clean:
-	rm $(object_files) $(tests) libgbdt.a
+	rm $(object_files) $(tests) libgbdt.a ctr
