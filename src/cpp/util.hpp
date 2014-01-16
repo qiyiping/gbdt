@@ -22,6 +22,13 @@ std::string JoinString(
 size_t SplitString(const std::string& str,
                    const std::string& separator,
                    std::vector<std::string>* tokens);
+
+template <typename T>
+void FreeVector(std::vector<T> *v) {
+  std::vector<T> t;
+  v->swap(t);
+}
+
 }
 
 #endif /* _UTIL_H_ */

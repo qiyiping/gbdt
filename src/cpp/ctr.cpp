@@ -55,6 +55,9 @@ int main(int argc, char *argv[]) {
   std::ofstream model_output(model_file.c_str());
   model_output << gbdt.Save();
 
+  CleanDataVector(&d);
+  FreeVector(&d);
+
   DataVector d2;
   r = LoadDataFromFile(test_file, &d2);
   assert(r);
@@ -73,7 +76,6 @@ int main(int argc, char *argv[]) {
   std::cout << "auc: " << auc.CalculateAuc() << std::endl;
 
   CleanDataVector(&d2);
-  CleanDataVector(&d);
 
   return 0;
 }
