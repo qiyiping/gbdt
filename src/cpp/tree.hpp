@@ -59,18 +59,18 @@ class RegressionTree {
  private:
   static void Fit(DataVector *data,
                   Node *node,
-                  int depth) { Fit(data, data->size(), node, depth); }
+                  size_t depth) { Fit(data, data->size(), node, depth); }
 
   static void Fit(DataVector *data,
                   size_t len,
                   Node *node,
-                  int depth);
+                  size_t depth);
 
   static ValueType Predict(const Node *node, const Tuple &t);
 
   static void SaveAux(const Node *node,
                       std::vector<const Node *> *nodes,
-                      std::map<const void *, int> *position_map);
+                      std::map<const void *, size_t> *position_map);
 
  private:
   Node *root;

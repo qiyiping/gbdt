@@ -17,7 +17,7 @@ ValueType GBDT::Predict(const Tuple &t) const {
     return kUnknownValue;
 
   ValueType r = 0;
-  for (int i = 0; i < gConf.iterations; ++i) {
+  for (size_t i = 0; i < gConf.iterations; ++i) {
     r += gConf.shrinkage * trees[i].Predict(t);
   }
 
@@ -30,10 +30,10 @@ void GBDT::Fit(DataVector *d) {
 
   size_t samples = d->size();
   if (gConf.data_sample_ratio < 1) {
-    samples = (size_t)(d->size() * gConf.data_sample_ratio);
+    samples = static_cast<size_t>(d->size() * gConf.data_sample_ratio);
   }
 
-  for (int i = 0; i < gConf.iterations; ++i) {
+  for (size_t i = 0; i < gConf.iterations; ++i) {
     if (samples < d->size()) {
 #ifndef USE_OPENMP
       std::random_shuffle(d->begin(), d->end());
@@ -61,7 +61,7 @@ void GBDT::Fit(DataVector *d) {
 
 std::string GBDT::Save() const {
   std::vector<std::string> vs;
-  for (int i = 0; i < gConf.iterations; ++i) {
+  for (size_t i = 0; i < gConf.iterations; ++i) {
     vs.push_back(trees[i].Save());
   }
   return JoinString(vs, "\n;\n");
@@ -72,7 +72,7 @@ void GBDT::Load(const std::string &s) {
   trees = new RegressionTree[gConf.iterations];
   std::vector<std::string> vs;
   SplitString(s, "\n;\n", &vs);
-  int j = 0;
+  size_t j = 0;
   for (size_t i = 0; i < vs.size(); ++i) {
     if (vs[i].empty()) continue;
 

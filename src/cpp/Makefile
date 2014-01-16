@@ -4,8 +4,8 @@ object_files = data.o fitness.o tree.o util.o config.o gbdt.o
 tests = data_unittest tree_unittest gbdt_unittest
 
 CXX = g++
-#CXXFLAGS = -Wall -Wextra -Wconversion -Werror -pedantic -O0 -g
-CXXFLAGS = -Wall -Wextra -Wconversion -pedantic -fopenmp -O2 -DUSE_OPENMP
+CXXFLAGS = -Wall -Wextra -Wconversion -pedantic -fopenmp -O0 -g
+#CXXFLAGS = -Wall -Wextra -Wconversion -pedantic -fopenmp -O2 -DUSE_OPENMP
 
 all: libgbdt.a $(tests) ctr
 

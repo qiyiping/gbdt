@@ -16,8 +16,8 @@ std::string Tuple::ToString() const {
   result += kItemDelimiter;
   result += boost::lexical_cast<std::string>(weight);
 
-  int n = gConf.number_of_feature;
-  for (int i = 0; i < n; i++) {
+  size_t n = gConf.number_of_feature;
+  for (size_t i = 0; i < n; ++i) {
     if (feature[i] == kUnknownValue)
       continue;
     result += kItemDelimiter;
@@ -31,9 +31,9 @@ std::string Tuple::ToString() const {
 
 Tuple* Tuple::FromString(const std::string &l) {
   Tuple* result = new Tuple();
-  int n = gConf.number_of_feature;
+  size_t n = gConf.number_of_feature;
   result->feature = new ValueType[n];
-  for (int i = 0; i < n; ++i) {
+  for (size_t i = 0; i < n; ++i) {
     result->feature[i] = kUnknownValue;
   }
 
@@ -54,8 +54,8 @@ Tuple* Tuple::FromString(const std::string &l) {
       std::cerr << "feature value pair with wrong format: " << tokens[i];
       continue;
     }
-    int index = boost::lexical_cast<int>(tokens[i].substr(0, found));
-    if (index < 0 || index >= n) {
+    size_t index = boost::lexical_cast<size_t>(tokens[i].substr(0, found));
+    if (index >= n) {
       std::cerr << "feature index out of boundary: " << index;
       continue;
     }

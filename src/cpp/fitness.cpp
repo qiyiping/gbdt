@@ -35,7 +35,7 @@ bool AlmostEqual(ValueType v1, ValueType v2) {
 
 bool Same(const DataVector &data, size_t len) {
   assert(len <= data.size());
-  if (len == 0)
+  if (len <= 1)
     return true;
 
   ValueType t = data[0]->target;
@@ -54,13 +54,13 @@ ValueType Average(const DataVector & data, size_t len) {
   assert(len <= data.size());
   if (len == 0)
     return 0;
-  ValueType s = 0;
-  ValueType c = 0;
+  double s = 0;
+  double c = 0;
   for (size_t i = 0; i < len; ++i) {
     s += data[i]->target * data[i]->weight;
     c += data[i]->weight;
   }
-  return s/c;
+  return static_cast<ValueType>(s / c);
 }
 
 ValueType Average(const DataVector & data) {
@@ -68,11 +68,11 @@ ValueType Average(const DataVector & data) {
 }
 
 bool FindSplit(DataVector *data, int *index, ValueType *value) {
-  FindSplit(data, data->size(), index, value);
+  return FindSplit(data, data->size(), index, value);
 }
 
 bool FindSplit(DataVector *data, size_t m, int *index, ValueType *value) {
-  int n = gConf.number_of_feature;
+  size_t n = gConf.number_of_feature;
   double best_fitness = std::numeric_limits<double>::max();
 
   std::vector<int> fv;
@@ -80,20 +80,20 @@ bool FindSplit(DataVector *data, size_t m, int *index, ValueType *value) {
     fv.push_back(i);
   }
 
-  int fn = n;
+  size_t fn = n;
   if (gConf.feature_sample_ratio < 1) {
-    fn = (int) (n*gConf.feature_sample_ratio);
+    fn = static_cast<size_t>(n*gConf.feature_sample_ratio);
     std::random_shuffle(fv.begin(), fv.end());
   }
 
-  for (int k = 0; k < fn; ++k) {
+  for (size_t k = 0; k < fn; ++k) {
     int i = fv[k];
 #ifndef USE_OPENMP
     std::sort(data->begin(), data->begin() + m, TupleCompare(i));
 #else
     __gnu_parallel::sort(data->begin(), data->begin() + m, TupleCompare(i));
 #endif
-    int unknown = 0;
+    size_t unknown = 0;
     double s = 0;
     double ss = 0;
     double c = 0;
@@ -118,7 +118,7 @@ bool FindSplit(DataVector *data, size_t m, int *index, ValueType *value) {
     s = 0;
     ss = 0;
     c = 0;
-    for (int j = unknown; j < m; ++j) {
+    for (size_t j = unknown; j < m; ++j) {
       s += (*data)[j]->target * (*data)[j]->weight;
       ss += Squared((*data)[j]->target) * (*data)[j]->weight;
       c += (*data)[j]->weight;
@@ -127,7 +127,7 @@ bool FindSplit(DataVector *data, size_t m, int *index, ValueType *value) {
     double ls = 0, lss = 0, lc = 0;
     double rs = s, rss = ss, rc = c;
     double fitness1 = 0, fitness2 = 0;
-    for (int j = unknown; j < m-1; ++j) {
+    for (size_t j = unknown; j < m-1; ++j) {
       s = (*data)[j]->target * (*data)[j]->weight;
       ss = Squared((*data)[j]->target) * (*data)[j]->weight;
       c = (*data)[j]->weight;
@@ -188,7 +188,7 @@ void SplitData(const DataVector &data, size_t len, int index, ValueType value, D
 
 double RMSE(const DataVector &data, const PredictVector &predict) {
   assert(data.size() == predict.size());
-  RMSE(data, predict, data.size());
+  return RMSE(data, predict, data.size());
 }
 
 double RMSE(const DataVector &data, const PredictVector &predict, size_t len) {

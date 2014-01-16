@@ -25,8 +25,8 @@ class Auc {
     std::sort(negative_scores.begin(), negative_scores.end());
     std::sort(positive_scores.begin(), positive_scores.end());
 
-    ValueType n0 = negative_scores.size();
-    ValueType n1 = positive_scores.size();
+    int n0 = negative_scores.size();
+    int n1 = positive_scores.size();
 
     if (n0 == 0 || n1 == 0) {
       return 0.5;
@@ -35,12 +35,12 @@ class Auc {
     // scan the data
     int i0 = 0;
     int i1 = 0;
-    int rank = 1;
-    ValueType rankSum = 0;
+    double rank = 1;
+    double rankSum = 0;
     while (i0 < n0 && i1 < n1) {
 
-      ValueType v0 = negative_scores[i0];
-      ValueType v1 = positive_scores[i1];
+      double v0 = negative_scores[i0];
+      double v1 = positive_scores[i1];
 
       if (v0 < v1) {
         i0++;
@@ -51,7 +51,7 @@ class Auc {
         rank++;
       } else {
         // ties have to be handled delicately
-        ValueType tieScore = v0;
+        double tieScore = v0;
 
         // how many negatives are tied?
         int k0 = 0;
@@ -77,7 +77,7 @@ class Auc {
 
     if (i1 < n1) {
       rankSum += (rank + (n1 - i1 - 1) / 2.0) * (n1 - i1);
-      rank += (int) (n1 - i1);
+      rank += (n1 - i1);
     }
 
     return (rankSum / n1 - (n1 + 1) / 2) / n0;

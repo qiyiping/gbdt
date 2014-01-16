@@ -11,8 +11,8 @@ namespace gbdt {
 void RegressionTree::Fit(DataVector *data,
                          size_t len,
                          Node *node,
-                         int depth) {
-  int max_depth = gConf.max_depth;
+                         size_t depth) {
+  size_t max_depth = gConf.max_depth;
 
   node->pred = Average(*data, len);
 
@@ -79,7 +79,7 @@ ValueType RegressionTree::Predict(const Tuple &t) const {
 
 std::string RegressionTree::Save() const {
   std::vector<const Node *> nodes;
-  std::map<const void *, int> position_map;
+  std::map<const void *, size_t> position_map;
   SaveAux(root, &nodes, &position_map);
 
   if (nodes.empty()) return std::string();
@@ -97,10 +97,10 @@ std::string RegressionTree::Save() const {
     for (int j = 0; j < Node::CHILDSIZE; ++j) {
       ns += " ";
       if (nodes[i]->child[j]) {
-        int p = position_map[nodes[i]->child[j]];
+        size_t p = position_map[nodes[i]->child[j]];
         ns += boost::lexical_cast<std::string>(p);
       } else {
-        ns += "-1";
+        ns += "0";
       }
     }
     vs.push_back(ns);
@@ -111,10 +111,10 @@ std::string RegressionTree::Save() const {
 
 void RegressionTree::SaveAux(const Node *node,
                              std::vector<const Node *> *nodes,
-                             std::map<const void *, int> *position_map) {
+                             std::map<const void *, size_t> *position_map) {
   if (!node) return;
   nodes->push_back(node);
-  position_map->insert(std::make_pair<const void *, int>(node, nodes->size() -1));
+  position_map->insert(std::make_pair<const void *, size_t>(node, nodes->size() -1));
 
   SaveAux(node->child[Node::LT], nodes, position_map);
   SaveAux(node->child[Node::GE], nodes, position_map);
@@ -128,7 +128,7 @@ void RegressionTree::Load(const std::string &s) {
 
   std::vector<Node *> nodes;
   std::vector<std::string> items;
-  for (int i = 0; i < vs.size(); ++i) {
+  for (size_t i = 0; i < vs.size(); ++i) {
     Node *n = new Node();
     SplitString(vs[i], " ", &items);
     n->index = boost::lexical_cast<int>(items[0]);
@@ -144,7 +144,7 @@ void RegressionTree::Load(const std::string &s) {
     nodes.push_back(n);
   }
 
-  for (int i = 0; i < nodes.size(); ++i) {
+  for (size_t i = 0; i < nodes.size(); ++i) {
     Node *lt = nodes[i]->child[Node::LT];
     Node *ge = nodes[i]->child[Node::GE];
     Node *un = nodes[i]->child[Node::UNKNOWN];

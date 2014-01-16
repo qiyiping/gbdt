@@ -5,6 +5,8 @@
 using namespace gbdt;
 
 int main(int argc, char *argv[]) {
+  UNUSED(argc);
+  UNUSED(argv);
   std::string l = "1 2 0:10 1:100";
   gConf.number_of_feature = 3;
   gConf.max_depth = 4;

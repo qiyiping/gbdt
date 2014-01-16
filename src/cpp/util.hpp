@@ -14,6 +14,9 @@ namespace gbdt {
   TypeName(const TypeName&);                    \
   void operator=(const TypeName&)
 
+// A macro to suppress the compiler's warning about unused variable
+#define UNUSED(expr) do { (void)(expr); } while (0)
+
 
 std::string JoinString(
     const std::vector<std::string>& parts,
