@@ -5,7 +5,7 @@ tests = data_unittest tree_unittest gbdt_unittest
 
 CXX = g++
 #CXXFLAGS = -Wall -Wextra -Wconversion -Werror -pedantic -O0 -g
-CXXFLAGS = -Wall -Wextra -Wconversion -pedantic -O2
+CXXFLAGS = -Wall -Wextra -Wconversion -pedantic -fopenmp -O2
 
 all: libgbdt.a $(tests) ctr
 

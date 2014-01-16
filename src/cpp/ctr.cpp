@@ -11,10 +11,15 @@
 #include <cstdlib>
 #include <ctime>
 
+#include <omp.h>
+
 using namespace gbdt;
 
 int main(int argc, char *argv[]) {
   std::srand ( unsigned ( std::time(0) ) );
+
+  const int threads_wanted = 4;
+  omp_set_num_threads(threads_wanted);
 
   gConf.number_of_feature = 66;
   gConf.max_depth = 4;

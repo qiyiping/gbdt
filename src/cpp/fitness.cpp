@@ -7,6 +7,9 @@
 #include <cmath>
 #include <iostream>
 
+#include <parallel/algorithm>  // openmp
+
+
 namespace {
 struct TupleCompare {
   TupleCompare(int i): index(i) {}
@@ -71,7 +74,8 @@ bool FindSplit(DataVector *data, int *index, ValueType *value) {
 
   for (int k = 0; k < fn; ++k) {
     int i = fv[k];
-    std::sort(data->begin(), data->end(), TupleCompare(i));
+    // std::sort(data->begin(), data->end(), TupleCompare(i));
+    __gnu_parallel::sort(data->begin(), data->end(), TupleCompare(i));
     int unknown = 0;
     double s = 0;
     double ss = 0;
