@@ -1,0 +1,6 @@
+* Gradient Boosting Regression Tree
+** Reference
++ Friedman, J. H. "Greedy Function Approximation: A Gradient Boosting Machine." (February 1999)
++ Friedman, J. H. "Stochastic Gradient Boosting." (March 1999)
++ Jerry Ye, et al. (2009). Stochastic gradient boosted distributed
+  decision trees. (Distributed implementation)
