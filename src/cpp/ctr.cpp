@@ -55,6 +55,9 @@ int main(int argc, char *argv[]) {
     gConf.data_sample_ratio = boost::lexical_cast<float>(argv[7]);
   }
 
+  std::cout << "configure: " << std::endl
+            << gConf.ToString() << std::endl;
+
   DataVector d;
   bool r = LoadDataFromFile(train_file, &d, true);
   assert(r);

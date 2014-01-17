@@ -4,6 +4,7 @@
 #define _CONFIG_H_
 
 #include <cstddef> // for size_t
+#include <string>
 
 namespace gbdt {
 class Configure {
@@ -16,6 +17,8 @@ class Configure {
   float data_sample_ratio;// portion of data to be fitted in each iteration
 
   Configure(): feature_sample_ratio(1), data_sample_ratio(1) {}
+
+  std::string ToString() const;
 };
 
 extern Configure gConf;
