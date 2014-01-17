@@ -73,7 +73,7 @@ void CleanDataVector(DataVector *data) {
   }
 }
 
-bool LoadDataFromFile(const std::string &path, DataVector *data) {
+bool LoadDataFromFile(const std::string &path, DataVector *data, bool ignore_weight) {
   data->clear();
   std::ifstream stream(path.c_str());
   if (!stream) {
@@ -82,10 +82,18 @@ bool LoadDataFromFile(const std::string &path, DataVector *data) {
 
   std::string l;
   while(std::getline(stream, l)) {
-    data->push_back(Tuple::FromString(l));
+    Tuple *t = Tuple::FromString(l);
+    if (ignore_weight) {
+      t->weight = 1;
+    }
+    data->push_back(t);
   }
 
   return true;
+}
+
+bool LoadDataFromFile(const std::string &path, DataVector *data) {
+  return LoadDataFromFile(path, data, false);
 }
 
 }

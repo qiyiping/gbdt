@@ -43,6 +43,7 @@ class Tuple {
 typedef std::vector<Tuple *> DataVector;
 void CleanDataVector(DataVector *data);
 bool LoadDataFromFile(const std::string &path, DataVector *data);
+bool LoadDataFromFile(const std::string &path, DataVector *data, bool ignore_weight);
 
 typedef std::vector<ValueType> PredictVector;
 }
