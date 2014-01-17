@@ -25,7 +25,7 @@ int main(int argc, char *argv[]) {
   omp_set_num_threads(threads_wanted);
 #endif
 
-  gConf.number_of_feature = 66;
+  gConf.number_of_feature = 79;
   gConf.max_depth = 4;
   gConf.iterations = 10;
   gConf.shrinkage = 0.1F;
