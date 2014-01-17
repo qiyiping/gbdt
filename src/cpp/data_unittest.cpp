@@ -8,8 +8,8 @@ int main(int argc, char *argv[]) {
   UNUSED(argc);
   UNUSED(argv);
   std::string l = "1 2 0:10 1:100";
-  gConf.number_of_feature = 3;
-  gConf.max_depth = 4;
+  g_conf.number_of_feature = 3;
+  g_conf.max_depth = 4;
 
   Tuple *t = Tuple::FromString(l);
 

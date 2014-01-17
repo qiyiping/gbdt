@@ -12,11 +12,13 @@ void RegressionTree::Fit(DataVector *data,
                          size_t len,
                          Node *node,
                          size_t depth) {
-  size_t max_depth = gConf.max_depth;
+  size_t max_depth = g_conf.max_depth;
 
   node->pred = Average(*data, len);
 
-  if (max_depth == depth || Same(*data, len)) {
+  if (max_depth == depth
+      || Same(*data, len)
+      || len <= g_conf.min_leaf_size) {
     node->leaf = true;
     return;
   }
@@ -128,6 +130,10 @@ void RegressionTree::Load(const std::string &s) {
 
   std::vector<Node *> nodes;
   std::vector<std::string> items;
+
+  std::vector<int> lt;
+  std::vector<int> ge;
+  std::vector<int> un;
   for (size_t i = 0; i < vs.size(); ++i) {
     Node *n = new Node();
     SplitString(vs[i], " ", &items);
@@ -135,27 +141,22 @@ void RegressionTree::Load(const std::string &s) {
     n->value = boost::lexical_cast<ValueType>(items[1]);
     n->leaf = boost::lexical_cast<bool>(items[2]);
     n->pred = boost::lexical_cast<ValueType>(items[3]);
-    long lt = boost::lexical_cast<long>(items[4]);
-    long ge = boost::lexical_cast<long>(items[5]);
-    long un = boost::lexical_cast<long>(items[6]);
-    if (lt > 0) n->child[Node::LT] = (Node *)lt;
-    if (ge > 0) n->child[Node::GE] = (Node *)ge;
-    if (un > 0) n->child[Node::UNKNOWN] = (Node *)un;
+    lt.push_back(boost::lexical_cast<int>(items[4]));
+    ge.push_back(boost::lexical_cast<int>(items[5]));
+    un.push_back(boost::lexical_cast<int>(items[6]));
+
     nodes.push_back(n);
   }
 
   for (size_t i = 0; i < nodes.size(); ++i) {
-    Node *lt = nodes[i]->child[Node::LT];
-    Node *ge = nodes[i]->child[Node::GE];
-    Node *un = nodes[i]->child[Node::UNKNOWN];
-    if (lt) {
-      nodes[i]->child[Node::LT] = nodes[(long)lt];
+    if (lt[i] > 0) {
+      nodes[i]->child[Node::LT] = nodes[lt[i]];
     }
-    if (ge) {
-      nodes[i]->child[Node::GE] = nodes[(long)ge];
+    if (ge[i] > 0) {
+      nodes[i]->child[Node::GE] = nodes[ge[i]];
     }
-    if (un) {
-      nodes[i]->child[Node::UNKNOWN] = nodes[(long)un];
+    if (un[i] > 0) {
+      nodes[i]->child[Node::UNKNOWN] = nodes[un[i]];
     }
   }
 

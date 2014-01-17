@@ -17,8 +17,8 @@ ValueType GBDT::Predict(const Tuple &t) const {
     return kUnknownValue;
 
   ValueType r = 0;
-  for (size_t i = 0; i < gConf.iterations; ++i) {
-    r += gConf.shrinkage * trees[i].Predict(t);
+  for (size_t i = 0; i < g_conf.iterations; ++i) {
+    r += g_conf.shrinkage * trees[i].Predict(t);
   }
 
   return r;
@@ -26,14 +26,14 @@ ValueType GBDT::Predict(const Tuple &t) const {
 
 void GBDT::Fit(DataVector *d) {
   delete[] trees;
-  trees = new RegressionTree[gConf.iterations];
+  trees = new RegressionTree[g_conf.iterations];
 
   size_t samples = d->size();
-  if (gConf.data_sample_ratio < 1) {
-    samples = static_cast<size_t>(d->size() * gConf.data_sample_ratio);
+  if (g_conf.data_sample_ratio < 1) {
+    samples = static_cast<size_t>(d->size() * g_conf.data_sample_ratio);
   }
 
-  for (size_t i = 0; i < gConf.iterations; ++i) {
+  for (size_t i = 0; i < g_conf.iterations; ++i) {
     if (samples < d->size()) {
 #ifndef USE_OPENMP
       std::random_shuffle(d->begin(), d->end());
@@ -49,19 +49,21 @@ void GBDT::Fit(DataVector *d) {
     double c = 0;
     for ( ; iter != d->end(); ++iter) {
       ValueType p = trees[i].Predict(**iter);
-      (*iter)->target -= gConf.shrinkage * p;
+      (*iter)->target -= g_conf.shrinkage * p;
       s += Squared((*iter)->target) * (*iter)->weight;
       c += (*iter)->weight;
     }
 
-    std::cout  << "iteration: " << i << std::endl
-               << "rmse: " << std::sqrt(s / c) << std::endl;
+    if (g_conf.debug) {
+      std::cout  << "iteration: " << i << std::endl
+                 << "rmse: " << std::sqrt(s / c) << std::endl;
+    }
   }
 }
 
 std::string GBDT::Save() const {
   std::vector<std::string> vs;
-  for (size_t i = 0; i < gConf.iterations; ++i) {
+  for (size_t i = 0; i < g_conf.iterations; ++i) {
     vs.push_back(trees[i].Save());
   }
   return JoinString(vs, "\n;\n");
@@ -69,7 +71,7 @@ std::string GBDT::Save() const {
 
 void GBDT::Load(const std::string &s) {
   delete[] trees;
-  trees = new RegressionTree[gConf.iterations];
+  trees = new RegressionTree[g_conf.iterations];
   std::vector<std::string> vs;
   SplitString(s, "\n;\n", &vs);
   size_t j = 0;
@@ -79,6 +81,6 @@ void GBDT::Load(const std::string &s) {
     trees[j++].Load(vs[i]);
   }
 
-  assert(j == gConf.iterations);
+  assert(j == g_conf.iterations);
 }
 }

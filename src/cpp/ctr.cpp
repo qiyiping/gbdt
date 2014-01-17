@@ -25,10 +25,10 @@ int main(int argc, char *argv[]) {
   omp_set_num_threads(threads_wanted);
 #endif
 
-  gConf.number_of_feature = 79;
-  gConf.max_depth = 4;
-  gConf.iterations = 10;
-  gConf.shrinkage = 0.1F;
+  g_conf.number_of_feature = 79;
+  g_conf.max_depth = 4;
+  g_conf.iterations = 10;
+  g_conf.shrinkage = 0.1F;
 
   if (argc < 3) return -1;
 
@@ -36,27 +36,27 @@ int main(int argc, char *argv[]) {
   std::string test_file(argv[2]);
 
   if (argc > 3) {
-    gConf.max_depth = boost::lexical_cast<int>(argv[3]);
+    g_conf.max_depth = boost::lexical_cast<int>(argv[3]);
   }
 
   if (argc > 4) {
-    gConf.iterations = boost::lexical_cast<int>(argv[4]);
+    g_conf.iterations = boost::lexical_cast<int>(argv[4]);
   }
 
   if (argc > 5) {
-    gConf.shrinkage = boost::lexical_cast<float>(argv[5]);
+    g_conf.shrinkage = boost::lexical_cast<float>(argv[5]);
   }
 
   if (argc > 6) {
-    gConf.feature_sample_ratio = boost::lexical_cast<float>(argv[6]);
+    g_conf.feature_sample_ratio = boost::lexical_cast<float>(argv[6]);
   }
 
   if (argc > 7) {
-    gConf.data_sample_ratio = boost::lexical_cast<float>(argv[7]);
+    g_conf.data_sample_ratio = boost::lexical_cast<float>(argv[7]);
   }
 
   std::cout << "configure: " << std::endl
-            << gConf.ToString() << std::endl;
+            << g_conf.ToString() << std::endl;
 
   DataVector d;
   bool r = LoadDataFromFile(train_file, &d, true);

@@ -16,7 +16,7 @@ std::string Tuple::ToString() const {
   result += kItemDelimiter;
   result += boost::lexical_cast<std::string>(weight);
 
-  size_t n = gConf.number_of_feature;
+  size_t n = g_conf.number_of_feature;
   for (size_t i = 0; i < n; ++i) {
     if (feature[i] == kUnknownValue)
       continue;
@@ -31,7 +31,7 @@ std::string Tuple::ToString() const {
 
 Tuple* Tuple::FromString(const std::string &l) {
   Tuple* result = new Tuple();
-  size_t n = gConf.number_of_feature;
+  size_t n = g_conf.number_of_feature;
   result->feature = new ValueType[n];
   for (size_t i = 0; i < n; ++i) {
     result->feature[i] = kUnknownValue;

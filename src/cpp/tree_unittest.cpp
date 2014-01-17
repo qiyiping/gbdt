@@ -8,10 +8,10 @@
 using namespace gbdt;
 
 int main(int argc, char *argv[]) {
-  gConf.number_of_feature = 3;
-  gConf.max_depth = 4;
+  g_conf.number_of_feature = 3;
+  g_conf.max_depth = 4;
   if (argc > 1) {
-    gConf.max_depth = boost::lexical_cast<int>(argv[1]);
+    g_conf.max_depth = boost::lexical_cast<int>(argv[1]);
   }
 
   DataVector d;

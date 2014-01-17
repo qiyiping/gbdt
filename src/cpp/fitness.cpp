@@ -72,7 +72,7 @@ bool FindSplit(DataVector *data, int *index, ValueType *value) {
 }
 
 bool FindSplit(DataVector *data, size_t m, int *index, ValueType *value) {
-  size_t n = gConf.number_of_feature;
+  size_t n = g_conf.number_of_feature;
   double best_fitness = std::numeric_limits<double>::max();
 
   std::vector<int> fv;
@@ -81,8 +81,8 @@ bool FindSplit(DataVector *data, size_t m, int *index, ValueType *value) {
   }
 
   size_t fn = n;
-  if (gConf.feature_sample_ratio < 1) {
-    fn = static_cast<size_t>(n*gConf.feature_sample_ratio);
+  if (g_conf.feature_sample_ratio < 1) {
+    fn = static_cast<size_t>(n*g_conf.feature_sample_ratio);
     std::random_shuffle(fv.begin(), fv.end());
   }
 
