@@ -56,7 +56,7 @@ int main(int argc, char *argv[]) {
   }
 
   DataVector d;
-  bool r = LoadDataFromFile(train_file, &d);
+  bool r = LoadDataFromFile(train_file, &d, true);
   assert(r);
 
   GBDT gbdt;
