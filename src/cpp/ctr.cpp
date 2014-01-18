@@ -55,8 +55,13 @@ int main(int argc, char *argv[]) {
     g_conf.data_sample_ratio = boost::lexical_cast<float>(argv[7]);
   }
 
+  int debug = 0;
+  if (argc > 8) {
+    debug = boost::lexical_cast<int>(argv[8]);
+  }
+
   g_conf.loss = LOG_LIKELIHOOD;
-  g_conf.debug = false;
+  g_conf.debug = debug > 0? true : false;
 
   DataVector d;
   bool r = LoadDataFromFile(train_file, &d);
@@ -85,14 +90,22 @@ int main(int argc, char *argv[]) {
   elapsed.Reset();
   DataVector::iterator iter = d2.begin();
   PredictVector predict;
-  Auc auc;
   for ( ; iter != d2.end(); ++iter) {
     ValueType p = gbdt.Predict(**iter);
+    p = Logit(p);
     predict.push_back(p);
-    auc.Add(p, (*iter)->label);
+
   }
   std::cout << "predict time: " << elapsed.Tell() << std::endl;
 
+  std::string predict_file = test_file + ".predict";
+  std::ofstream predict_output(predict_file.c_str());
+
+  Auc auc;
+  for (size_t i = 0; i < d2.size(); ++i) {
+    predict_output << predict[i] << " " << d2[i]->ToString() << std::endl;
+    auc.Add(predict[i], (*iter)->label);
+  }
   std::cout << "auc: " << auc.CalculateAuc() << std::endl;
 
   CleanDataVector(&d2);

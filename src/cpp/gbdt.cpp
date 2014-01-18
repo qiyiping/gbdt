@@ -7,6 +7,7 @@
 #include <cmath>
 #include <cassert>
 #include <algorithm>
+#include <boost/lexical_cast.hpp>
 
 #ifdef USE_OPENMP
 #include <parallel/algorithm>  // openmp
@@ -50,6 +51,8 @@ void GBDT::Fit(DataVector *d) {
   Init(d, d->size());
 
   for (size_t i = 0; i < g_conf.iterations; ++i) {
+    std::cout  << "iteration: " << i << std::endl;
+
     if (samples < d->size()) {
 #ifndef USE_OPENMP
       std::random_shuffle(d->begin(), d->end());
@@ -73,8 +76,7 @@ void GBDT::Fit(DataVector *d) {
           s += Squared((*iter)->label - p) * (*iter)->weight;
           c += (*iter)->weight;
         }
-        std::cout  << "iteration: " << i << std::endl
-                   << "rmse: " << std::sqrt(s / c) << std::endl;
+        std::cout << "rmse: " << std::sqrt(s / c) << std::endl;
       }
     } else if (g_conf.loss == LOG_LIKELIHOOD) {
       for (size_t j = 0; j < samples; ++j) {
@@ -90,8 +92,7 @@ void GBDT::Fit(DataVector *d) {
           ValueType p = Logit(Predict(**iter, i));
           auc.Add(p, (*iter)->label);
         }
-        std::cout  << "iteration: " << i << std::endl
-                   << "auc: " << auc.CalculateAuc() << std::endl;
+        std::cout << "auc: " << auc.CalculateAuc() << std::endl;
       }
     }
 
@@ -104,6 +105,7 @@ std::string GBDT::Save() const {
   for (size_t i = 0; i < g_conf.iterations; ++i) {
     vs.push_back(trees[i].Save());
   }
+  vs.push_back(boost::lexical_cast<std::string>(bias));
   return JoinString(vs, "\n;\n");
 }
 
@@ -112,13 +114,13 @@ void GBDT::Load(const std::string &s) {
   trees = new RegressionTree[g_conf.iterations];
   std::vector<std::string> vs;
   SplitString(s, "\n;\n", &vs);
-  size_t j = 0;
-  for (size_t i = 0; i < vs.size(); ++i) {
-    if (vs[i].empty()) continue;
 
-    trees[j++].Load(vs[i]);
+  assert(vs.size() == (g_conf.iterations + 1));
+
+  for (size_t i = 0; i < g_conf.iterations; ++i) {
+    trees[i].Load(vs[i]);
   }
 
-  assert(j == g_conf.iterations);
+  bias = boost::lexical_cast<ValueType>(vs[g_conf.iterations]);
 }
 }

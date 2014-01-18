@@ -7,9 +7,10 @@ using namespace gbdt;
 int main(int argc, char *argv[]) {
   UNUSED(argc);
   UNUSED(argv);
-  std::string l = "1 2 0:10 1:100";
+  std::string l = "0 2 0:10 1:100";
   g_conf.number_of_feature = 3;
   g_conf.max_depth = 4;
+  g_conf.loss = LOG_LIKELIHOOD;
 
   Tuple *t = Tuple::FromString(l);
 
