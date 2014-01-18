@@ -16,7 +16,7 @@ class GBDT {
   void Load(const std::string &s);
  private:
   ValueType Predict(const Tuple &t, size_t n) const;
-  void Init(DataVector *d, size_t len);
+  void Init(const DataVector &d, size_t len);
  private:
   RegressionTree *trees;
   ValueType bias;

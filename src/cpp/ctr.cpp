@@ -91,8 +91,7 @@ int main(int argc, char *argv[]) {
   DataVector::iterator iter = d2.begin();
   PredictVector predict;
   for ( ; iter != d2.end(); ++iter) {
-    ValueType p = gbdt.Predict(**iter);
-    p = Logit(p);
+    ValueType p = Logit(gbdt.Predict(**iter));
     predict.push_back(p);
 
   }
@@ -104,7 +103,7 @@ int main(int argc, char *argv[]) {
   Auc auc;
   for (size_t i = 0; i < d2.size(); ++i) {
     predict_output << predict[i] << " " << d2[i]->ToString() << std::endl;
-    auc.Add(predict[i], (*iter)->label);
+    auc.Add(predict[i], d2[i]->label);
   }
   std::cout << "auc: " << auc.CalculateAuc() << std::endl;
 

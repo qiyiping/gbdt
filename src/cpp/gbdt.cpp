@@ -28,10 +28,18 @@ ValueType GBDT::Predict(const Tuple &t, size_t n) const {
   return r;
 }
 
-void GBDT::Init(DataVector *d, size_t len) {
-  assert(d->size() >= len);
+void GBDT::Init(const DataVector &d, size_t len) {
+  assert(d.size() >= len);
 
-  double v = Average(*d, len);
+  double s = 0;
+  double c = 0;
+  for (size_t i = 0; i < len; ++i) {
+    s += d[i]->label * d[i]->weight;
+    c += d[i]->weight;
+  }
+
+  double v = s / c;
+
   if (g_conf.loss == SQUARED_ERROR) {
     bias = static_cast<ValueType>(v);
   } else if (g_conf.loss == LOG_LIKELIHOOD) {
@@ -48,7 +56,7 @@ void GBDT::Fit(DataVector *d) {
     samples = static_cast<size_t>(d->size() * g_conf.data_sample_ratio);
   }
 
-  Init(d, d->size());
+  Init(*d, d->size());
 
   for (size_t i = 0; i < g_conf.iterations; ++i) {
     std::cout  << "iteration: " << i << std::endl;
