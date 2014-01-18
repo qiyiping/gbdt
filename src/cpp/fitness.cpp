@@ -3,8 +3,6 @@
 #include "fitness.hpp"
 #include "tree.hpp"
 #include <algorithm>
-#include <cassert>
-#include <cmath>
 #include <iostream>
 
 #ifdef USE_OPENMP
@@ -46,10 +44,6 @@ bool Same(const DataVector &data, size_t len) {
   return true;
 }
 
-bool Same(const DataVector &data) {
-  return Same(data, data.size());
-}
-
 ValueType Average(const DataVector & data, size_t len) {
   assert(len <= data.size());
   if (len == 0)
@@ -61,14 +55,6 @@ ValueType Average(const DataVector & data, size_t len) {
     c += data[i]->weight;
   }
   return static_cast<ValueType>(s / c);
-}
-
-ValueType Average(const DataVector & data) {
-  return Average(data, data.size());
-}
-
-bool FindSplit(DataVector *data, int *index, ValueType *value) {
-  return FindSplit(data, data->size(), index, value);
 }
 
 bool FindSplit(DataVector *data, size_t m, int *index, ValueType *value) {
@@ -170,10 +156,6 @@ bool FindSplit(DataVector *data, size_t m, int *index, ValueType *value) {
   return best_fitness != std::numeric_limits<double>::max();
 }
 
-void SplitData(const DataVector &data, int index, ValueType value, DataVector *output) {
-  SplitData(data, data.size(), index, value, output);
-}
-
 void SplitData(const DataVector &data, size_t len, int index, ValueType value, DataVector *output) {
   for (size_t i = 0; i < len; ++i) {
     if (data[i]->feature[index] == kUnknownValue) {
@@ -184,11 +166,6 @@ void SplitData(const DataVector &data, size_t len, int index, ValueType value, D
       output[Node::GE].push_back(data[i]);
     }
   }
-}
-
-double RMSE(const DataVector &data, const PredictVector &predict) {
-  assert(data.size() == predict.size());
-  return RMSE(data, predict, data.size());
 }
 
 double RMSE(const DataVector &data, const PredictVector &predict, size_t len) {
@@ -203,6 +180,20 @@ double RMSE(const DataVector &data, const PredictVector &predict, size_t len) {
   }
 
   return std::sqrt(s / c);
+}
+
+ValueType LogitOptimalValue(const DataVector &d, size_t len) {
+  assert(d.size() >= len);
+
+  double s = 0;
+  double c = 0;
+  for (size_t i = 0; i < len; ++i) {
+    s += d[i]->target;
+    double y = Abs(d[i]->target);
+    c += y*(2-y);
+  }
+
+  return static_cast<ValueType> (s / c);
 }
 
 }

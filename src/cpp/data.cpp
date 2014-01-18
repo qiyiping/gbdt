@@ -1,3 +1,5 @@
+// Author: qiyiping@gmail.com (Yiping Qi)
+
 #include "data.hpp"
 #include <boost/lexical_cast.hpp>
 #include <fstream>
@@ -46,7 +48,10 @@ Tuple* Tuple::FromString(const std::string &l) {
   result->label = boost::lexical_cast<ValueType>(tokens[0]);
   result->weight = boost::lexical_cast<ValueType>(tokens[1]);
 
-  result->target = result->label;
+  // for two-class classifier, labels should be 1 or -1
+  if (g_conf.loss == LOG_LIKELIHOOD) {
+    result->label = result->label > 0? 1 : -1;
+  }
 
   for (size_t i = 2; i < tokens.size(); ++i) {
     size_t found = tokens[i].find(kKVDelimiter);

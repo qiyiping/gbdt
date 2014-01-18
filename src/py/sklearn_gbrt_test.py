@@ -17,17 +17,18 @@ def load_data(filename, n):
     return (x, y)
 
 import sys
+import math
 if __name__ == '__main__':
     x, y = load_data(sys.argv[1], int(sys.argv[3]))
     x1, y1 = load_data(sys.argv[2], int(sys.argv[3]))
 
     est = GradientBoostingRegressor(n_estimators=100,
                                     learning_rate=0.1,
-                                    max_depth=3,
+                                    max_depth=int(sys.argv[4]),
                                     random_state=0,
                                     loss='ls').fit(x, y)
 
     y1est = est.predict(x1)
-    print mean_squared_error(y1, y1est)
+    print math.sqrt(mean_squared_error(y1, y1est))
 
     print y1est

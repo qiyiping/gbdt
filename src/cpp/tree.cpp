@@ -14,7 +14,11 @@ void RegressionTree::Fit(DataVector *data,
                          size_t depth) {
   size_t max_depth = g_conf.max_depth;
 
-  node->pred = Average(*data, len);
+  if (g_conf.loss == SQUARED_ERROR) {
+    node->pred = Average(*data, len);
+  } else if (g_conf.loss == LOG_LIKELIHOOD) {
+    node->pred = LogitOptimalValue(*data, len);
+  }
 
   if (max_depth == depth
       || Same(*data, len)

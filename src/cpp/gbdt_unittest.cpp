@@ -41,6 +41,9 @@ int main(int argc, char *argv[]) {
     g_conf.data_sample_ratio = boost::lexical_cast<float>(argv[7]);
   }
 
+  g_conf.debug = true;
+  g_conf.loss = LOG_LIKELIHOOD;
+
   DataVector d;
   bool r = LoadDataFromFile(train_file, &d);
   assert(r);
@@ -71,8 +74,19 @@ int main(int argc, char *argv[]) {
   DataVector::iterator iter = d2.begin();
   PredictVector predict;
   for ( ; iter != d2.end(); ++iter) {
-    ValueType p = gbdt.Predict(**iter);
-    predict.push_back(p);
+    ValueType p;
+    if (g_conf.loss == SQUARED_ERROR) {
+      p = gbdt.Predict(**iter);
+      predict.push_back(p);
+    } else if (g_conf.loss == LOG_LIKELIHOOD) {
+      p = gbdt.Predict(**iter);
+      p = Logit(p);
+      if (p >= 0.5)
+        p = 1;
+      else
+        p = -1;
+      predict.push_back(p);
+    }
     // std::cout << (*iter)->ToString() << std::endl
     //           << p << std::endl;
   }

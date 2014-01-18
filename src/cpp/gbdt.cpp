@@ -2,6 +2,7 @@
 #include "gbdt.hpp"
 #include "fitness.hpp"
 #include "util.hpp"
+#include "auc.hpp"
 #include <iostream>
 #include <cmath>
 #include <cassert>
@@ -12,16 +13,29 @@
 #endif
 
 namespace gbdt {
-ValueType GBDT::Predict(const Tuple &t) const {
+ValueType GBDT::Predict(const Tuple &t, size_t n) const {
   if (!trees)
     return kUnknownValue;
 
-  ValueType r = 0;
-  for (size_t i = 0; i < g_conf.iterations; ++i) {
+  assert(n <= g_conf.iterations);
+
+  ValueType r = bias;
+  for (size_t i = 0; i < n; ++i) {
     r += g_conf.shrinkage * trees[i].Predict(t);
   }
 
   return r;
+}
+
+void GBDT::Init(DataVector *d, size_t len) {
+  assert(d->size() >= len);
+
+  double v = Average(*d, len);
+  if (g_conf.loss == SQUARED_ERROR) {
+    bias = static_cast<ValueType>(v);
+  } else if (g_conf.loss == LOG_LIKELIHOOD) {
+    bias = static_cast<ValueType>(std::log((1+v) / (1-v)) / 2.0);
+  }
 }
 
 void GBDT::Fit(DataVector *d) {
@@ -33,6 +47,8 @@ void GBDT::Fit(DataVector *d) {
     samples = static_cast<size_t>(d->size() * g_conf.data_sample_ratio);
   }
 
+  Init(d, d->size());
+
   for (size_t i = 0; i < g_conf.iterations; ++i) {
     if (samples < d->size()) {
 #ifndef USE_OPENMP
@@ -42,22 +58,44 @@ void GBDT::Fit(DataVector *d) {
 #endif
     }
 
+    if (g_conf.loss == SQUARED_ERROR) {
+      for (size_t j = 0; j < samples; ++j) {
+        ValueType p = Predict(*(*d)[j], i);
+        (*d)[j]->target = (*d)[j]->label - p;
+      }
+
+      if (g_conf.debug) {
+        double s = 0;
+        double c = 0;
+        DataVector::iterator iter = d->begin();
+        for ( ; iter != d->end(); ++iter) {
+          ValueType p = Predict(**iter, i);
+          s += Squared((*iter)->label - p) * (*iter)->weight;
+          c += (*iter)->weight;
+        }
+        std::cout  << "iteration: " << i << std::endl
+                   << "rmse: " << std::sqrt(s / c) << std::endl;
+      }
+    } else if (g_conf.loss == LOG_LIKELIHOOD) {
+      for (size_t j = 0; j < samples; ++j) {
+        ValueType p = Predict(*(*d)[j], i);
+        (*d)[j]->target =
+            static_cast<ValueType>(LogitLossGradient((*d)[j]->label, p));
+      }
+
+      if (g_conf.debug) {
+        Auc auc;
+        DataVector::iterator iter = d->begin();
+        for ( ; iter != d->end(); ++iter) {
+          ValueType p = Logit(Predict(**iter, i));
+          auc.Add(p, (*iter)->label);
+        }
+        std::cout  << "iteration: " << i << std::endl
+                   << "auc: " << auc.CalculateAuc() << std::endl;
+      }
+    }
+
     trees[i].Fit(d, samples);
-
-    DataVector::iterator iter = d->begin();
-    double s = 0;
-    double c = 0;
-    for ( ; iter != d->end(); ++iter) {
-      ValueType p = trees[i].Predict(**iter);
-      (*iter)->target -= g_conf.shrinkage * p;
-      s += Squared((*iter)->target) * (*iter)->weight;
-      c += (*iter)->weight;
-    }
-
-    if (g_conf.debug) {
-      std::cout  << "iteration: " << i << std::endl
-                 << "rmse: " << std::sqrt(s / c) << std::endl;
-    }
   }
 }
 
