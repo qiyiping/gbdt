@@ -55,12 +55,16 @@ int main(int argc, char *argv[]) {
     g_conf.data_sample_ratio = boost::lexical_cast<float>(argv[7]);
   }
 
-  std::cout << "configure: " << std::endl
-            << g_conf.ToString() << std::endl;
+  g_conf.loss = LOG_LIKELIHOOD;
+  g_conf.debug = false;
 
   DataVector d;
-  bool r = LoadDataFromFile(train_file, &d, true);
+  bool r = LoadDataFromFile(train_file, &d);
   assert(r);
+
+  g_conf.min_leaf_size = d.size() / 20;
+  std::cout << "configure: " << std::endl
+            << g_conf.ToString() << std::endl;
 
   GBDT gbdt;
   Elapsed elapsed;
