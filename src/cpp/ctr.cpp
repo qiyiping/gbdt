@@ -71,6 +71,10 @@ int main(int argc, char *argv[]) {
   std::cout << "configure: " << std::endl
             << g_conf.ToString() << std::endl;
 
+  if (argc > 9) {
+    g_conf.LoadFeatureCost(argv[9]);
+  }
+
   GBDT gbdt;
   Elapsed elapsed;
   gbdt.Fit(&d);
