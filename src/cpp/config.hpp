@@ -6,6 +6,7 @@
 #include <cstddef> // for size_t
 #include <string>
 
+
 namespace gbdt {
 
 enum Loss {
@@ -27,12 +28,27 @@ class Configure {
 
   bool debug;                    // show debug info?
 
+  double *feature_costs;         // mannually set feature costs in order to tune the model
+  bool enable_feature_tunning;   // when set true, `feature_costs' is used to tune the model
+
+
   Configure():
       feature_sample_ratio(1),
       data_sample_ratio(1),
       min_leaf_size(0),
       loss(SQUARED_ERROR),
-      debug(false) {}
+      debug(false),
+      feature_costs(NULL),
+      enable_feature_tunning(false) {}
+
+  ~Configure() { delete[] feature_costs; }
+
+  bool LoadFeatureCost(const std::string &cost_file);
+  void ResetFeatureCost() {
+    delete[] feature_costs;
+    feature_costs = NULL;
+    enable_feature_tunning = false;
+  }
 
   std::string ToString() const;
 };

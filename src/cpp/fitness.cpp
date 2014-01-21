@@ -145,6 +145,11 @@ bool FindSplit(DataVector *data, size_t m, int *index, ValueType *value) {
 
 
       double fitness = fitness0 + fitness1 + fitness2;
+
+      if (g_conf.feature_costs && g_conf.enable_feature_tunning) {
+        fitness *= g_conf.feature_costs[i];
+      }
+
       if (best_fitness > fitness) {
         best_fitness = fitness;
         *index = i;
