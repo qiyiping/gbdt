@@ -104,11 +104,6 @@ void GBDT::Fit(DataVector *d) {
       }
     }
 
-    // tune split process
-    if (i > 3) {
-      g_conf.enable_feature_tunning = false;
-    }
-
     trees[i].Fit(d, samples);
   }
 }
