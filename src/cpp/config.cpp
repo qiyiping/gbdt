@@ -40,6 +40,8 @@ bool Configure::LoadFeatureCost(const std::string &cost_file) {
 
   std::string l;
   while(std::getline(inputstream, l)) {
+    if (l.empty() || l[0] == '#')
+      continue;
     size_t found = l.find(":");
     int idx = boost::lexical_cast<int>(l.substr(0, found));
     double cost = boost::lexical_cast<double>(l.substr(found+1));
