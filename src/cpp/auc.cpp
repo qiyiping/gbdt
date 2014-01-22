@@ -1,13 +1,26 @@
 // Author: qiyiping@gmail.com (Yiping Qi)
 
 #include "auc.hpp"
+#include <iostream>
 
 namespace gbdt {
 void Auc::Add(ValueType score, ValueType label) {
-  if (label > 0)
+  if (label > 0) {
     positive_scores.push_back(score);
-  else
+
+    if (score >= threshold) {
+      confusion_table[3] += 1;
+    } else {
+      confusion_table[2] += 1;
+    }
+  } else {
     negative_scores.push_back(score);
+    if (score < threshold) {
+      confusion_table[0] += 1;
+    } else {
+      confusion_table[1] += 1;
+    }
+  }
 }
 
 ValueType Auc::CalculateAuc() {
@@ -70,5 +83,10 @@ ValueType Auc::CalculateAuc() {
   }
 
   return (rankSum / n1 - (n1 + 1) / 2) / n0;
+}
+
+void Auc::PrintConfusionTable() const {
+  std::cout << confusion_table[0] << "\t" << confusion_table[1] << std::endl
+            << confusion_table[2] << "\t" << confusion_table[3] << std::endl;
 }
 }

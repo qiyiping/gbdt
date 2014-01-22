@@ -110,6 +110,7 @@ int main(int argc, char *argv[]) {
     auc.Add(predict[i], d2[i]->label);
   }
   std::cout << "auc: " << auc.CalculateAuc() << std::endl;
+  auc.PrintConfusionTable();
 
   CleanDataVector(&d2);
 

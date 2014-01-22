@@ -12,14 +12,19 @@ namespace gbdt {
 
 class Auc {
  public:
-  Auc() {}
+  Auc(): confusion_table(4, 0L), threshold(0.5F) {}
 
+  void SetThreshold(ValueType t) { threshold = t; }
   void Add(ValueType score, ValueType label);
   ValueType CalculateAuc();
+  const std::vector<long> &GetConfusionTable() const { return confusion_table; }
+  void PrintConfusionTable() const;
 
  private:
   std::vector<ValueType> positive_scores;
   std::vector<ValueType> negative_scores;
+  std::vector<long> confusion_table;
+  ValueType threshold;
 };
 
 }
