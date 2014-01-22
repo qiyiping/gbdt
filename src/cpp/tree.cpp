@@ -43,6 +43,10 @@ void RegressionTree::Fit(DataVector *data,
     return;
   }
 
+  if (g_conf.feature_costs && g_conf.enable_feature_tunning) {
+    g_conf.feature_costs[node->index] += 1.0e-4;
+  }
+
   node->child[Node::LT] = new Node();
   node->child[Node::GE] = new Node();
 
