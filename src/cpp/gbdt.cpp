@@ -18,11 +18,11 @@ ValueType GBDT::Predict(const Tuple &t, size_t n) const {
   if (!trees)
     return kUnknownValue;
 
-  assert(n <= g_conf.iterations);
+  assert(n <= iterations);
 
   ValueType r = bias;
   for (size_t i = 0; i < n; ++i) {
-    r += g_conf.shrinkage * trees[i].Predict(t);
+    r += shrinkage * trees[i].Predict(t);
   }
 
   return r;
@@ -110,25 +110,26 @@ void GBDT::Fit(DataVector *d) {
 
 std::string GBDT::Save() const {
   std::vector<std::string> vs;
-  for (size_t i = 0; i < g_conf.iterations; ++i) {
+  vs.push_back(boost::lexical_cast<std::string>(shrinkage));
+  vs.push_back(boost::lexical_cast<std::string>(bias));
+  for (size_t i = 0; i < iterations; ++i) {
     vs.push_back(trees[i].Save());
   }
-  vs.push_back(boost::lexical_cast<std::string>(bias));
   return JoinString(vs, "\n;\n");
 }
 
 void GBDT::Load(const std::string &s) {
   delete[] trees;
-  trees = new RegressionTree[g_conf.iterations];
   std::vector<std::string> vs;
   SplitString(s, "\n;\n", &vs);
 
-  assert(vs.size() == (g_conf.iterations + 1));
+  iterations = vs.size() - 2;
+  shrinkage = boost::lexical_cast<ValueType>(vs[0]);
+  bias = boost::lexical_cast<ValueType>(vs[1]);
 
-  for (size_t i = 0; i < g_conf.iterations; ++i) {
-    trees[i].Load(vs[i]);
+  trees = new RegressionTree[iterations];
+  for (size_t i = 0; i < iterations; ++i) {
+    trees[i].Load(vs[i+2]);
   }
-
-  bias = boost::lexical_cast<ValueType>(vs[g_conf.iterations]);
 }
 }

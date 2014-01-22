@@ -6,10 +6,14 @@
 namespace gbdt {
 class GBDT {
  public:
-  GBDT(): trees(NULL), bias(0) {}
+  GBDT(): trees(NULL),
+          bias(0),
+          shrinkage(g_conf.shrinkage),
+          iterations(g_conf.iterations) {}
+
   void Fit(DataVector *d);
   ValueType Predict(const Tuple &t) const {
-    return Predict(t, g_conf.iterations);
+    return Predict(t, iterations);
   }
 
   std::string Save() const;
@@ -20,6 +24,8 @@ class GBDT {
  private:
   RegressionTree *trees;
   ValueType bias;
+  ValueType shrinkage;
+  size_t iterations;
 };
 }
 

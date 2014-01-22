@@ -5,7 +5,6 @@
 #include "util.hpp"
 #include <boost/lexical_cast.hpp>
 #include <cassert>
-#include <iostream>
 
 namespace gbdt {
 void RegressionTree::Fit(DataVector *data,
@@ -32,8 +31,6 @@ void RegressionTree::Fit(DataVector *data,
     return;
   }
 
-  // std::cout << "depth: " << depth << " index: " << node->index << " value: " << node->value << std::endl;
-
   DataVector out[Node::CHILDSIZE];
 
   SplitData(*data, len, node->index, node->value, out);
@@ -43,6 +40,7 @@ void RegressionTree::Fit(DataVector *data,
     return;
   }
 
+  // add feature cost if certain feature is used
   if (g_conf.feature_costs && g_conf.enable_feature_tunning) {
     g_conf.feature_costs[node->index] += 1.0e-4;
   }
