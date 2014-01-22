@@ -26,7 +26,7 @@ int main(int argc, char *argv[]) {
 #endif
 
   g_conf.number_of_feature = 79;
-  g_conf.max_depth = 4;
+  g_conf.max_depth = 6;
   g_conf.iterations = 10;
   g_conf.shrinkage = 0.1F;
 
@@ -67,7 +67,7 @@ int main(int argc, char *argv[]) {
   bool r = LoadDataFromFile(train_file, &d);
   assert(r);
 
-  g_conf.min_leaf_size = d.size() / 20;
+  g_conf.min_leaf_size = d.size() / 40;
   std::cout << "configure: " << std::endl
             << g_conf.ToString() << std::endl;
 
