@@ -85,6 +85,10 @@ bool LoadDataFromFile(const std::string &path, DataVector *data, bool ignore_wei
     return false;
   }
 
+  long buffer_size = 512 * 1024 * 1024;
+  char* local_buffer = new char[buffer_size];
+  stream.rdbuf()->pubsetbuf(local_buffer, buffer_size);
+
   std::string l;
   while(std::getline(stream, l)) {
     Tuple *t = Tuple::FromString(l);
@@ -93,6 +97,8 @@ bool LoadDataFromFile(const std::string &path, DataVector *data, bool ignore_wei
     }
     data->push_back(t);
   }
+
+  delete[] local_buffer;
 
   return true;
 }
