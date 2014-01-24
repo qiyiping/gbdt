@@ -25,7 +25,7 @@ int main(int argc, char *argv[]) {
   omp_set_num_threads(threads_wanted);
 #endif
 
-  g_conf.number_of_feature = 79;
+  g_conf.number_of_feature = 81;
   g_conf.max_depth = 6;
   g_conf.iterations = 10;
   g_conf.shrinkage = 0.1F;
@@ -36,11 +36,11 @@ int main(int argc, char *argv[]) {
   std::string test_file(argv[2]);
 
   if (argc > 3) {
-    g_conf.max_depth = boost::lexical_cast<int>(argv[3]);
+    g_conf.max_depth = boost::lexical_cast<size_t>(argv[3]);
   }
 
   if (argc > 4) {
-    g_conf.iterations = boost::lexical_cast<int>(argv[4]);
+    g_conf.iterations = boost::lexical_cast<size_t>(argv[4]);
   }
 
   if (argc > 5) {
@@ -73,6 +73,10 @@ int main(int argc, char *argv[]) {
 
   if (argc > 9) {
     g_conf.LoadFeatureCost(argv[9]);
+  }
+
+  if (argc > 10) {
+    g_conf.number_of_feature = boost::lexical_cast<size_t>(argv[10]);
   }
 
   GBDT gbdt;
