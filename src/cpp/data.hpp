@@ -14,6 +14,12 @@ const ValueType kValueTypeMax = std::numeric_limits<ValueType>::max();
 const ValueType kValueTypeMin = std::numeric_limits<ValueType>::min();
 const ValueType kUnknownValue = kValueTypeMin;
 
+enum VariableType {
+  CONTINUOUS,
+  ORDINAL,
+  NOMINAL
+};
+
 class Tuple {
  public:
   Tuple():

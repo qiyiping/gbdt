@@ -31,7 +31,6 @@ class Configure {
   double *feature_costs;         // mannually set feature costs in order to tune the model
   bool enable_feature_tunning;   // when set true, `feature_costs' is used to tune the model
 
-
   Configure():
       feature_sample_ratio(1),
       data_sample_ratio(1),
