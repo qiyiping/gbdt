@@ -25,7 +25,7 @@ struct TupleCompare {
 namespace gbdt {
 
 bool AlmostEqual(ValueType v1, ValueType v2) {
-  ValueType diff = v1 > v2? (v1-v2) : (v2-v1);
+  ValueType diff = Abs(v1-v2);
   if (diff < 1.0e-5)
     return true;
   return false;

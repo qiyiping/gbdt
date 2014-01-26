@@ -36,11 +36,10 @@ void RegressionTree::Fit(DataVector *data,
   SplitData(*data, len, node->index, node->value, out);
   if (out[Node::LT].empty() || out[Node::GE].empty()) {
     node->leaf = true;
-    node->pred = Average(*data, len);
     return;
   }
 
-  // add feature cost if certain feature is used
+  // increase feature cost if certain feature is used
   if (g_conf.feature_costs && g_conf.enable_feature_tunning) {
     g_conf.feature_costs[node->index] += 1.0e-4;
   }
