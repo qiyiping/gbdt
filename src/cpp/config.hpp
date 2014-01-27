@@ -14,6 +14,7 @@ enum Loss {
   LOG_LIKELIHOOD                 // two-class logistic regression and classification
 };
 
+// Training settings
 class Configure {
  public:
   size_t number_of_feature;      // number of features
