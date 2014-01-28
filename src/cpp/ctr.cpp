@@ -67,7 +67,7 @@ int main(int argc, char *argv[]) {
   bool r = LoadDataFromFile(train_file, &d);
   assert(r);
 
-  g_conf.min_leaf_size = d.size() / 40;
+  g_conf.min_leaf_size = d.size() * g_conf.data_sample_ratio / 40;
   std::cout << "configure: " << std::endl
             << g_conf.ToString() << std::endl;
 
