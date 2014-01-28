@@ -11,6 +11,7 @@ bool AlmostEqual(ValueType v1, ValueType v2);
 bool Same(const DataVector &data, size_t len);
 ValueType Average(const DataVector & data, size_t len);
 bool FindSplit(DataVector *data, size_t len, int *index, ValueType *value);
+bool GetImpurity(DataVector *data, size_t len, int index, ValueType *value, double *impurity);
 void SplitData(const DataVector &data, size_t len, int index, ValueType value, DataVector *output);
 double RMSE(const DataVector &data, const PredictVector &predict, size_t len);
 

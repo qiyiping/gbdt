@@ -13,7 +13,7 @@ int main(int argc, char *argv[]) {
 
   g_conf.number_of_feature = 3;
   g_conf.max_depth = 4;
-  g_conf.iterations = 10;
+  g_conf.iterations = 100;
   g_conf.shrinkage = 0.1F;
 
   if (argc < 3) return -1;
@@ -42,7 +42,8 @@ int main(int argc, char *argv[]) {
   }
 
   g_conf.debug = true;
-  g_conf.loss = LOG_LIKELIHOOD;
+  // g_conf.loss = LOG_LIKELIHOOD;
+  g_conf.loss = SQUARED_ERROR;
 
   DataVector d;
   bool r = LoadDataFromFile(train_file, &d);
@@ -63,8 +64,8 @@ int main(int argc, char *argv[]) {
   std::string model_file = train_file + ".model";
   std::ofstream model_output(model_file.c_str());
   model_output << gbdt.Save();
-  // GBDT gbdt2;
-  // gbdt2.Load(gbdt.Save());
+  GBDT gbdt2;
+  gbdt2.Load(gbdt.Save());
 
   DataVector d2;
   r = LoadDataFromFile(test_file, &d2);
@@ -76,10 +77,10 @@ int main(int argc, char *argv[]) {
   for ( ; iter != d2.end(); ++iter) {
     ValueType p;
     if (g_conf.loss == SQUARED_ERROR) {
-      p = gbdt.Predict(**iter);
+      p = gbdt2.Predict(**iter);
       predict.push_back(p);
     } else if (g_conf.loss == LOG_LIKELIHOOD) {
-      p = gbdt.Predict(**iter);
+      p = gbdt2.Predict(**iter);
       p = Logit(p);
       if (p >= 0.5)
         p = 1;

@@ -74,91 +74,106 @@ bool FindSplit(DataVector *data, size_t m, int *index, ValueType *value) {
 
   for (size_t k = 0; k < fn; ++k) {
     int i = fv[k];
-#ifndef USE_OPENMP
-    std::sort(data->begin(), data->begin() + m, TupleCompare(i));
-#else
-    __gnu_parallel::sort(data->begin(), data->begin() + m, TupleCompare(i));
-#endif
-    size_t unknown = 0;
-    double s = 0;
-    double ss = 0;
-    double c = 0;
-
-    while (unknown < m && (*data)[unknown]->feature[i] == kUnknownValue) {
-      s += (*data)[unknown]->target * (*data)[unknown]->weight;
-      ss += Squared((*data)[unknown]->target) * (*data)[unknown]->weight;
-      c += (*data)[unknown]->weight;
-      unknown++;
-    }
-
-    if (unknown == m) {
-      continue;
-    }
-
-    double fitness0 = c > 1? (ss - s*s/c) : 0;
-    if (fitness0 < 0) {
-      // std::cerr << "fitness0 < 0: " << fitness0 << std::endl;
-      fitness0 = 0;
-    }
-
-    s = 0;
-    ss = 0;
-    c = 0;
-    for (size_t j = unknown; j < m; ++j) {
-      s += (*data)[j]->target * (*data)[j]->weight;
-      ss += Squared((*data)[j]->target) * (*data)[j]->weight;
-      c += (*data)[j]->weight;
-    }
-
-    double ls = 0, lss = 0, lc = 0;
-    double rs = s, rss = ss, rc = c;
-    double fitness1 = 0, fitness2 = 0;
-    for (size_t j = unknown; j < m-1; ++j) {
-      s = (*data)[j]->target * (*data)[j]->weight;
-      ss = Squared((*data)[j]->target) * (*data)[j]->weight;
-      c = (*data)[j]->weight;
-
-      ls += s;
-      lss += ss;
-      lc += c;
-
-      rs -= s;
-      rss -= ss;
-      rc -= c;
-
-      ValueType f1 = (*data)[j]->feature[i];
-      ValueType f2 = (*data)[j+1]->feature[i];
-      if (AlmostEqual(f1, f2))
-        continue;
-
-      fitness1 = lc > 1? (lss - ls*ls/lc) : 0;
-      if (fitness1 < 0) {
-        // std::cerr << "fitness1 < 0: " << fitness1 << std::endl;
-        fitness1 = 0;
-      }
-
-      fitness2 = rc > 1? (rss - rs*rs/rc) : 0;
-      if (fitness2 < 0) {
-        // std::cerr << "fitness2 < 0: " << fitness2 << std::endl;
-        fitness2 = 0;
-      }
-
-
-      double fitness = fitness0 + fitness1 + fitness2;
-
-      if (g_conf.feature_costs && g_conf.enable_feature_tunning) {
-        fitness *= g_conf.feature_costs[i];
-      }
-
-      if (best_fitness > fitness) {
-        best_fitness = fitness;
+    ValueType v;
+    double impurity;
+    if (GetImpurity(data, m, i, &v, &impurity)) {
+      if (best_fitness > impurity) {
+        best_fitness = impurity;
         *index = i;
-        *value = (f1+f2)/2;
+        *value = v;
       }
     }
   }
 
   return best_fitness != std::numeric_limits<double>::max();
+}
+
+bool GetImpurity(DataVector *data, size_t len, int index, ValueType *value, double *impurity) {
+  *impurity = std::numeric_limits<double>::max();
+  *value = kUnknownValue;
+
+#ifndef USE_OPENMP
+  std::sort(data->begin(), data->begin() + len, TupleCompare(index));
+#else
+  __gnu_parallel::sort(data->begin(), data->begin() + len, TupleCompare(index));
+#endif
+  size_t unknown = 0;
+  double s = 0;
+  double ss = 0;
+  double c = 0;
+
+  while (unknown < len && (*data)[unknown]->feature[index] == kUnknownValue) {
+    s += (*data)[unknown]->target * (*data)[unknown]->weight;
+    ss += Squared((*data)[unknown]->target) * (*data)[unknown]->weight;
+    c += (*data)[unknown]->weight;
+    unknown++;
+  }
+
+  if (unknown == len) {
+    return false;
+  }
+
+  double fitness0 = c > 1? (ss - s*s/c) : 0;
+  if (fitness0 < 0) {
+    // std::cerr << "fitness0 < 0: " << fitness0 << std::endl;
+    fitness0 = 0;
+  }
+
+  s = 0;
+  ss = 0;
+  c = 0;
+  for (size_t j = unknown; j < len; ++j) {
+    s += (*data)[j]->target * (*data)[j]->weight;
+    ss += Squared((*data)[j]->target) * (*data)[j]->weight;
+    c += (*data)[j]->weight;
+  }
+
+  double ls = 0, lss = 0, lc = 0;
+  double rs = s, rss = ss, rc = c;
+  double fitness1 = 0, fitness2 = 0;
+  for (size_t j = unknown; j < len-1; ++j) {
+    s = (*data)[j]->target * (*data)[j]->weight;
+    ss = Squared((*data)[j]->target) * (*data)[j]->weight;
+    c = (*data)[j]->weight;
+
+    ls += s;
+    lss += ss;
+    lc += c;
+
+    rs -= s;
+    rss -= ss;
+    rc -= c;
+
+    ValueType f1 = (*data)[j]->feature[index];
+    ValueType f2 = (*data)[j+1]->feature[index];
+    if (AlmostEqual(f1, f2))
+      continue;
+
+    fitness1 = lc > 1? (lss - ls*ls/lc) : 0;
+    if (fitness1 < 0) {
+      // std::cerr << "fitness1 < 0: " << fitness1 << std::endl;
+      fitness1 = 0;
+    }
+
+    fitness2 = rc > 1? (rss - rs*rs/rc) : 0;
+    if (fitness2 < 0) {
+      // std::cerr << "fitness2 < 0: " << fitness2 << std::endl;
+      fitness2 = 0;
+    }
+
+    double fitness = fitness0 + fitness1 + fitness2;
+
+    if (g_conf.feature_costs && g_conf.enable_feature_tunning) {
+      fitness *= g_conf.feature_costs[index];
+    }
+
+    if (*impurity > fitness) {
+      *impurity = fitness;
+      *value = (f1+f2)/2;
+    }
+  }
+
+  return *impurity != std::numeric_limits<double>::max();
 }
 
 void SplitData(const DataVector &data, size_t len, int index, ValueType value, DataVector *output) {
