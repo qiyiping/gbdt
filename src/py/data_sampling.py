@@ -28,5 +28,5 @@ if __name__ == '__main__':
     output_file = sys.argv[2]
     line_number = int(sys.argv[3])
     negative_ratio = float(sys.argv[4])
-    positive_weight = int(sys.argv[5])
+    positive_weight = float(sys.argv[5])
     sample_data(input_file, output_file, line_number, negative_ratio, positive_weight)
