@@ -25,7 +25,7 @@ int main(int argc, char *argv[]) {
   omp_set_num_threads(threads_wanted);
 #endif
 
-  g_conf.number_of_feature = 81;
+  g_conf.number_of_feature = 84;
   g_conf.max_depth = 6;
   g_conf.iterations = 10;
   g_conf.shrinkage = 0.1F;
