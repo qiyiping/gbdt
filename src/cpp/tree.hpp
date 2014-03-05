@@ -56,15 +56,19 @@ class RegressionTree {
   std::string Save() const;
   void Load(const std::string &s);
 
+  double *GetGain() { return gain; }
+
  private:
   static void Fit(DataVector *data,
                   Node *node,
-                  size_t depth) { Fit(data, data->size(), node, depth); }
+                  size_t depth,
+                  double *gain) { Fit(data, data->size(), node, depth, gain); }
 
   static void Fit(DataVector *data,
                   size_t len,
                   Node *node,
-                  size_t depth);
+                  size_t depth,
+                  double *gain);
 
   static ValueType Predict(const Node *node, const Tuple &t);
 

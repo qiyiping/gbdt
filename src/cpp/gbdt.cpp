@@ -106,6 +106,22 @@ void GBDT::Fit(DataVector *d) {
 
     trees[i].Fit(d, samples);
   }
+
+
+  // Calculate gain
+  delete[] gain;
+  gain = new double[g_conf.number_of_feature];
+
+  for (size_t i = 0; i < g_conf.number_of_feature; ++i) {
+    gain[i] = 0.0;
+  }
+
+  for (size_t j = 0; j < iterations; ++j) {
+    double *g = trees[j].GetGain();
+    for (size_t i = 0; i < g_conf.number_of_feature; ++i) {
+      gain[i] += g[i];
+    }
+  }
 }
 
 std::string GBDT::Save() const {
@@ -131,5 +147,10 @@ void GBDT::Load(const std::string &s) {
   for (size_t i = 0; i < iterations; ++i) {
     trees[i].Load(vs[i+2]);
   }
+}
+
+GBDT::~GBDT() {
+  delete[] trees;
+  delete[] gain;
 }
 }

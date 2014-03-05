@@ -10,7 +10,8 @@ namespace gbdt {
 void RegressionTree::Fit(DataVector *data,
                          size_t len,
                          Node *node,
-                         size_t depth) {
+                         size_t depth,
+                         double *gain) {
   size_t max_depth = g_conf.max_depth;
 
   if (g_conf.loss == SQUARED_ERROR) {
@@ -26,7 +27,8 @@ void RegressionTree::Fit(DataVector *data,
     return;
   }
 
-  if (!FindSplit(data, len, &(node->index), &(node->value))) {
+  double g = 0.0;
+  if (!FindSplit(data, len, &(node->index), &(node->value), &g)) {
     node->leaf = true;
     return;
   }
@@ -39,6 +41,11 @@ void RegressionTree::Fit(DataVector *data,
     return;
   }
 
+  // update gain
+  if (gain[node->index] < g) {
+    gain[node->index] = g;
+  }
+
   // increase feature cost if certain feature is used
   if (g_conf.feature_costs && g_conf.enable_feature_tunning) {
     g_conf.feature_costs[node->index] += 1.0e-4;
@@ -47,12 +54,12 @@ void RegressionTree::Fit(DataVector *data,
   node->child[Node::LT] = new Node();
   node->child[Node::GE] = new Node();
 
-  Fit(&out[Node::LT], node->child[Node::LT], depth+1);
-  Fit(&out[Node::GE], node->child[Node::GE], depth+1);
+  Fit(&out[Node::LT], node->child[Node::LT], depth+1, gain);
+  Fit(&out[Node::GE], node->child[Node::GE], depth+1, gain);
 
   if (!out[Node::UNKNOWN].empty()) {
     node->child[Node::UNKNOWN] = new Node();
-    Fit(&out[Node::UNKNOWN], node->child[Node::UNKNOWN], depth+1);
+    Fit(&out[Node::UNKNOWN], node->child[Node::UNKNOWN], depth+1, gain);
   }
 }
 
@@ -77,7 +84,12 @@ void RegressionTree::Fit(DataVector *data, size_t len) {
   assert(data->size() >= len);
   delete root;
   root = new Node();
-  Fit(data, len, root, 0);
+  delete[] gain;
+  gain = new double[g_conf.number_of_feature];
+  for (size_t i = 0; i < g_conf.number_of_feature; ++i) {
+    gain[i] = 0.0;
+  }
+  Fit(data, len, root, 0, gain);
 }
 
 ValueType RegressionTree::Predict(const Tuple &t) const {

@@ -57,7 +57,8 @@ ValueType Average(const DataVector & data, size_t len) {
   return static_cast<ValueType>(s / c);
 }
 
-bool FindSplit(DataVector *data, size_t m, int *index, ValueType *value) {
+bool FindSplit(DataVector *data, size_t m,
+               int *index, ValueType *value, double *gain) {
   size_t n = g_conf.number_of_feature;
   double best_fitness = std::numeric_limits<double>::max();
 
@@ -76,11 +77,16 @@ bool FindSplit(DataVector *data, size_t m, int *index, ValueType *value) {
     int i = fv[k];
     ValueType v;
     double impurity;
-    if (GetImpurity(data, m, i, &v, &impurity)) {
+    double g;
+    if (GetImpurity(data, m, i, &v, &impurity, &g)) {
+      // Choose feature with smallest impurity to split.  If there's
+      // no unknown value, it's equivalent to choose feature with
+      // largest gain
       if (best_fitness > impurity) {
         best_fitness = impurity;
         *index = i;
         *value = v;
+        *gain = g;
       }
     }
   }
@@ -88,9 +94,12 @@ bool FindSplit(DataVector *data, size_t m, int *index, ValueType *value) {
   return best_fitness != std::numeric_limits<double>::max();
 }
 
-bool GetImpurity(DataVector *data, size_t len, int index, ValueType *value, double *impurity) {
+bool GetImpurity(DataVector *data, size_t len,
+                 int index, ValueType *value,
+                 double *impurity, double *gain) {
   *impurity = std::numeric_limits<double>::max();
   *value = kUnknownValue;
+  *gain = 0;
 
 #ifndef USE_OPENMP
   std::sort(data->begin(), data->begin() + len, TupleCompare(index));
@@ -127,6 +136,8 @@ bool GetImpurity(DataVector *data, size_t len, int index, ValueType *value, doub
     ss += Squared((*data)[j]->target) * (*data)[j]->weight;
     c += (*data)[j]->weight;
   }
+
+  double fitness00 = c > 1? (ss - s*s/c) : 0;
 
   double ls = 0, lss = 0, lc = 0;
   double rs = s, rss = ss, rc = c;
@@ -170,6 +181,7 @@ bool GetImpurity(DataVector *data, size_t len, int index, ValueType *value, doub
     if (*impurity > fitness) {
       *impurity = fitness;
       *value = (f1+f2)/2;
+      *gain = fitness00 - fitness1 - fitness2;
     }
   }
 

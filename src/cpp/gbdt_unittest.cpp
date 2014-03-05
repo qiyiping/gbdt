@@ -64,6 +64,12 @@ int main(int argc, char *argv[]) {
   std::string model_file = train_file + ".model";
   std::ofstream model_output(model_file.c_str());
   model_output << gbdt.Save();
+
+  double *g = gbdt.GetGain();
+  for (size_t i = 0; i < g_conf.number_of_feature; ++i) {
+    std::cout << i << "\t" << g[i] << std::endl;
+  }
+
   GBDT gbdt2;
   gbdt2.Load(gbdt.Save());
 

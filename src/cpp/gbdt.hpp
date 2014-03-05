@@ -9,7 +9,8 @@ class GBDT {
   GBDT(): trees(NULL),
           bias(0),
           shrinkage(g_conf.shrinkage),
-          iterations(g_conf.iterations) {}
+          iterations(g_conf.iterations),
+          gain(NULL) {}
 
   void Fit(DataVector *d);
   ValueType Predict(const Tuple &t) const {
@@ -18,6 +19,10 @@ class GBDT {
 
   std::string Save() const;
   void Load(const std::string &s);
+
+  double *GetGain() { return gain; }
+
+  ~GBDT();
  private:
   ValueType Predict(const Tuple &t, size_t n) const;
   void Init(const DataVector &d, size_t len);
@@ -26,6 +31,10 @@ class GBDT {
   ValueType bias;
   ValueType shrinkage;
   size_t iterations;
+
+  double *gain;
+
+  DISALLOW_COPY_AND_ASSIGN(GBDT);
 };
 }
 

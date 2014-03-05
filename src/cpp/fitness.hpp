@@ -9,9 +9,12 @@
 namespace gbdt {
 bool AlmostEqual(ValueType v1, ValueType v2);
 bool Same(const DataVector &data, size_t len);
-ValueType Average(const DataVector & data, size_t len);
-bool FindSplit(DataVector *data, size_t len, int *index, ValueType *value);
-bool GetImpurity(DataVector *data, size_t len, int index, ValueType *value, double *impurity);
+ValueType Average(const DataVector &data, size_t len);
+bool FindSplit(DataVector *data, size_t len,
+               int *index, ValueType *value, double *gain);
+bool GetImpurity(DataVector *data, size_t len,
+                 int index, ValueType *value,
+                 double *impurity, double *gain);
 void SplitData(const DataVector &data, size_t len, int index, ValueType value, DataVector *output);
 double RMSE(const DataVector &data, const PredictVector &predict, size_t len);
 
@@ -26,8 +29,9 @@ ValueType Average(const DataVector & data) {
 }
 
 inline
-bool FindSplit(DataVector *data, int *index, ValueType *value) {
-  return FindSplit(data, data->size(), index, value);
+bool FindSplit(DataVector *data, int *index,
+               ValueType *value, double *gain) {
+  return FindSplit(data, data->size(), index, value, gain);
 }
 
 inline
