@@ -45,8 +45,8 @@ class Node {
 
 class RegressionTree {
  public:
-  RegressionTree(): root(NULL) {}
-  ~RegressionTree() { delete root; }
+  RegressionTree(): root(NULL), gain(NULL) {}
+  ~RegressionTree() { delete root; delete[] gain; }
 
   void Fit(DataVector *data) { Fit(data, data->size()); }
   void Fit(DataVector *data, size_t len);
@@ -74,6 +74,7 @@ class RegressionTree {
 
  private:
   Node *root;
+  double *gain;
 
   DISALLOW_COPY_AND_ASSIGN(RegressionTree);
 };
