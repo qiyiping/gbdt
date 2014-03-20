@@ -37,6 +37,5 @@ if __name__ == '__main__':
     x, y = load_data(sys.argv[1], n_samples, n_features)
 
     c, p = f_classif(x, y)
-
     print c
     print p
