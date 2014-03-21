@@ -31,8 +31,8 @@ def load_data(filename, n_samples, n_features):
 
 
 if __name__ == '__main__':
-    n_samples = 10000
-    n_features = 3
+    n_samples = 300000
+    n_features = 94
 
     x, y = load_data(sys.argv[1], n_samples, n_features)
 
