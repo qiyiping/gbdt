@@ -24,6 +24,8 @@ def load_data(filename, n_samples, n_features):
                 x[sample_idx, feature_idx] = feature_val
 
             sample_idx += 1
+            if sample_idx >= n_samples:
+                break
     except Exception as e:
         print e
 
@@ -31,7 +33,7 @@ def load_data(filename, n_samples, n_features):
 
 
 if __name__ == '__main__':
-    n_samples = 300000
+    n_samples = 10000
     n_features = 94
 
     x, y = load_data(sys.argv[1], n_samples, n_features)
