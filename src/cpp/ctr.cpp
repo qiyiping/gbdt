@@ -91,6 +91,11 @@ int main(int argc, char *argv[]) {
   CleanDataVector(&d);
   FreeVector(&d);
 
+  double *g = gbdt.GetGain();
+  for (size_t i = 0; i < g_conf.number_of_feature; ++i) {
+    std::cout << i << "\t" << g[i] << std::endl;
+  }
+
   DataVector d2;
   r = LoadDataFromFile(test_file, &d2);
   assert(r);

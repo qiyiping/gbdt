@@ -7,13 +7,22 @@ import pylab
 
 import sys
 
+def load_feature_mapping(filename):
+    z = []
+    f = open(filename)
+    for l in f:
+        z.append(l.strip())
+    return z
+
 def load_data(filename, n_samples, n_features):
-    x = numpy.zeros((n_samples, n_features, ))
-    y = numpy.zeros((n_samples, ))
+    x = numpy.zeros((n_samples, n_features, ), dtype=numpy.float64)
+    y = numpy.zeros(n_samples)
 
     try:
         f = open(filename)
         sample_idx = 0
+
+        max_index = 0
         for l in f:
             tokens = l.split(' ')
             y[sample_idx] = int(tokens[0])
@@ -33,11 +42,19 @@ def load_data(filename, n_samples, n_features):
 
 
 if __name__ == '__main__':
-    n_samples = 10000
-    n_features = 94
+    n_samples = int(sys.argv[2])
+    z = load_feature_mapping(sys.argv[3])
+    n_features = len(z)
+
+    print n_features
 
     x, y = load_data(sys.argv[1], n_samples, n_features)
 
-    c, p = f_classif(x, y)
-    print c
-    print p
+    f, p = f_classif(x, y)
+
+    t = { z[i]:f[i] for i in range(0, n_features) }
+
+    st = sorted(t.items(), key=lambda x:x[1], reverse = True)
+
+    for i in st:
+        print '{0}:{1}'.format(i[0], i[1])
