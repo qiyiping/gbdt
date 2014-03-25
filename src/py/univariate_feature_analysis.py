@@ -3,7 +3,6 @@
 from sklearn.feature_selection import f_classif
 
 import numpy
-import pylab
 
 import sys
 
