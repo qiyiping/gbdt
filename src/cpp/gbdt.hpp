@@ -17,6 +17,10 @@ class GBDT {
     return Predict(t, iterations);
   }
 
+  ValueType Predict(const Tuple &t, double *p) const {
+    return Predict(t, iterations, p);
+  }
+
   std::string Save() const;
   void Load(const std::string &s);
 
@@ -25,6 +29,7 @@ class GBDT {
   ~GBDT();
  private:
   ValueType Predict(const Tuple &t, size_t n) const;
+  ValueType Predict(const Tuple &t, size_t n, double *p) const;
   void Init(const DataVector &d, size_t len);
  private:
   RegressionTree *trees;

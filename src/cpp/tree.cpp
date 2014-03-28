@@ -80,6 +80,26 @@ ValueType RegressionTree::Predict(const Node *root, const Tuple &t) {
   }
 }
 
+ValueType RegressionTree::Predict(const Node *root, const Tuple &t, double *p) {
+  if (root->leaf) {
+    return root->pred;
+  }
+  if (t.feature[root->index] == kUnknownValue) {
+    if (root->child[Node::UNKNOWN]) {
+      p[root->index] += (root->child[Node::UNKNOWN]->pred - root->pred);
+      return Predict(root->child[Node::UNKNOWN], t);
+    } else {
+      return root->pred;
+    }
+  } else if (t.feature[root->index] < root->value) {
+    p[root->index] += (root->child[Node::LT]->pred - root->pred);
+    return Predict(root->child[Node::LT], t);
+  } else {
+    p[root->index] += (root->child[Node::GE]->pred - root->pred);
+    return Predict(root->child[Node::GE], t);
+  }
+}
+
 void RegressionTree::Fit(DataVector *data, size_t len) {
   assert(data->size() >= len);
   delete root;
@@ -94,6 +114,10 @@ void RegressionTree::Fit(DataVector *data, size_t len) {
 
 ValueType RegressionTree::Predict(const Tuple &t) const {
   return Predict(root, t);
+}
+
+ValueType RegressionTree::Predict(const Tuple &t, double *p) const {
+  return Predict(root, t, p);
 }
 
 std::string RegressionTree::Save() const {
