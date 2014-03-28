@@ -7,7 +7,7 @@ CXX = g++
 CXXFLAGS = -Wall -Wextra -Wconversion -pedantic -fopenmp -O2
 #CXXFLAGS = -Wall -Wextra -Wconversion -pedantic -fopenmp -O2 -DUSE_OPENMP
 
-all: libgbdt.a $(tests) ctr
+all: libgbdt.a $(tests) ctr gbdt_predict
 
 data.o: $(header_files) data.cpp
 	$(CXX) -c $(CXXFLAGS) data.cpp
@@ -36,7 +36,8 @@ libgbdt.a: $(object_files)
 ctr: libgbdt.a ctr.cpp
 	$(CXX) $(CXXFLAGS) -o ctr ctr.cpp libgbdt.a
 
-
+gbdt_predict: libgbdt.a gbdt_predict.cpp
+	$(CXX) $(CXXFLAGS) -o gbdt_predict gbdt_predict.cpp libgbdt.a
 
 
 data_unittest: libgbdt.a data_unittest.cpp
@@ -49,4 +50,4 @@ gbdt_unittest: libgbdt.a gbdt_unittest.cpp
 	$(CXX) $(CXXFLAGS) -o gbdt_unittest gbdt_unittest.cpp libgbdt.a
 
 clean:
-	rm $(object_files) $(tests) libgbdt.a ctr
+	rm $(object_files) $(tests) libgbdt.a ctr gbdt_predict
