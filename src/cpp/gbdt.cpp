@@ -41,6 +41,19 @@ ValueType GBDT::Predict(const Tuple &t, size_t n, double *p) const {
 
   return r;
 }
+ValueType GBDT::Predict(const Tuple &t, size_t n, double *p, bool absolute_gain) const {
+  if (!trees)
+    return kUnknownValue;
+
+  assert(n <= iterations);
+
+  ValueType r = bias;
+  for (size_t i = 0; i < n; ++i) {
+    r += shrinkage * trees[i].Predict(t, p, absolute_gain);
+  }
+
+  return r;
+}
 
 void GBDT::Init(const DataVector &d, size_t len) {
   assert(d.size() >= len);

@@ -54,6 +54,8 @@ class RegressionTree {
   ValueType Predict(const Tuple &t) const;
 
   ValueType Predict(const Tuple &t, double *p) const;
+  
+  ValueType Predict(const Tuple &t, double *p, bool absolute_gain) const;
 
   std::string Save() const;
   void Load(const std::string &s);
@@ -74,6 +76,7 @@ class RegressionTree {
 
   static ValueType Predict(const Node *node, const Tuple &t);
   static ValueType Predict(const Node *node, const Tuple &t, double *p);
+  static ValueType Predict(const Node *node, const Tuple &t, double *p, const absolute_gain);
 
   static void SaveAux(const Node *node,
                       std::vector<const Node *> *nodes,

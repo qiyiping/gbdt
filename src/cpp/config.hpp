@@ -28,6 +28,7 @@ class Configure {
   Loss loss;                     // loss type
 
   bool debug;                    // show debug info?
+  bool absolute_gain;            // absolute_gain of gain, default gain.
 
   double *feature_costs;         // mannually set feature costs in order to tune the model
   bool enable_feature_tunning;   // when set true, `feature_costs' is used to tune the model
@@ -39,7 +40,8 @@ class Configure {
       loss(SQUARED_ERROR),
       debug(false),
       feature_costs(NULL),
-      enable_feature_tunning(false) {}
+      enable_feature_tunning(false),
+      absolute_gain(false) {}
 
   ~Configure() { delete[] feature_costs; }
 

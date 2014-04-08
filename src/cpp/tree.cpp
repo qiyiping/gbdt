@@ -100,6 +100,10 @@ ValueType RegressionTree::Predict(const Node *root, const Tuple &t, double *p) {
   }
 }
 
+ValueType RegressionTree::Predict(const Node *root, const Tuple &t, double *p, bool absolute_gain) {
+
+}
+
 void RegressionTree::Fit(DataVector *data, size_t len) {
   assert(data->size() >= len);
   delete root;
@@ -118,6 +122,9 @@ ValueType RegressionTree::Predict(const Tuple &t) const {
 
 ValueType RegressionTree::Predict(const Tuple &t, double *p) const {
   return Predict(root, t, p);
+}
+ValueType RegressionTree::Predict(const Tuple &t, double *p, bool absolute_gain) const {
+  return Predict(root, t, p, absolute_gain);
 }
 
 std::string RegressionTree::Save() const {
