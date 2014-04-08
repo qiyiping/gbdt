@@ -101,7 +101,33 @@ ValueType RegressionTree::Predict(const Node *root, const Tuple &t, double *p) {
 }
 
 ValueType RegressionTree::Predict(const Node *root, const Tuple &t, double *p, bool absolute_gain) {
+  std::stack<const Node *> pathstack;
+  while(!root->leaf){
+    if(t.feature[root->index] == kUnknownValue){
+       if(root->child[Node::UNKNOWN]){
+         pathstack.push(root);
+         root = root->child[Node::UNKNOWN];
+       }
+       else
+          return root->pred;
+     }
+     else if(t.feature[root->index] < root->value)  {
+        pathstack.push(root);
+        root = root->child[Node::LT];
 
+     }
+     else {
+        pathstack.push(root);
+        root = root->child[Node::GE];
+     }
+   }
+   if (!pathstack.empty()) {
+       const Node * toppath = pathstack.top();
+       if(p[toppath->index] < fabs(toppath->pred - root->pred))
+          p[toppath->index] = fabs(toppath->pred - root->pred);
+       pathstack.pop();
+   }
+   return root->pred;
 }
 
 void RegressionTree::Fit(DataVector *data, size_t len) {

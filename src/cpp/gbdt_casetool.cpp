@@ -38,7 +38,7 @@ int main(int argc, char *argv[]) {
 
   g_conf.loss = loss_type;
   bool absolute_g = false;
-  if (argc > 5 && std::strcmp(argv[4], "absolute") == 0) {
+  if (argc > 5 && std::strcmp(argv[5], "absolute") == 0) {
      absolute_g = true;
   }
   g_conf.absolute_gain = absolute_g; 

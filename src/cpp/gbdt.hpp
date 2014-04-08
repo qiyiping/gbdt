@@ -34,7 +34,7 @@ class GBDT {
  private:
   ValueType Predict(const Tuple &t, size_t n) const;
   ValueType Predict(const Tuple &t, size_t n, double *p) const;
-  ValueType Predict(const Tuple &t, size_t n, double *p, absolute_gain) const;
+  ValueType Predict(const Tuple &t, size_t n, double *p, bool absolute_gain) const;
   void Init(const DataVector &d, size_t len);
  private:
   RegressionTree *trees;
