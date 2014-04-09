@@ -51,4 +51,4 @@ gbdt_unittest: libgbdt.a gbdt_unittest.cpp
 	$(CXX) $(CXXFLAGS) -o gbdt_unittest gbdt_unittest.cpp libgbdt.a
 
 clean:
-	rm $(object_files) $(tests) libgbdt.a ctr gbdt_predict
+	rm $(object_files) $(tests) libgbdt.a ctr gbdt_predict gbdt_casetool
