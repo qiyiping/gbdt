@@ -67,10 +67,6 @@ int main(int argc, char *argv[]) {
   bool r = LoadDataFromFile(train_file, &d);
   assert(r);
 
-  g_conf.min_leaf_size = d.size() * g_conf.data_sample_ratio / 40;
-  std::cout << "configure: " << std::endl
-            << g_conf.ToString() << std::endl;
-
   if (argc > 9) {
     g_conf.LoadFeatureCost(argv[9]);
   }
@@ -78,6 +74,10 @@ int main(int argc, char *argv[]) {
   if (argc > 10) {
     g_conf.number_of_feature = boost::lexical_cast<size_t>(argv[10]);
   }
+
+  g_conf.min_leaf_size = d.size() * g_conf.data_sample_ratio / 40;
+  std::cout << "configure: " << std::endl
+            << g_conf.ToString() << std::endl;
 
   GBDT gbdt;
   Elapsed elapsed;
