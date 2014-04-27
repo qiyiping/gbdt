@@ -25,7 +25,7 @@ int main(int argc, char *argv[]) {
   omp_set_num_threads(threads_wanted);
 #endif
 
-  g_conf.number_of_feature = 63;
+  g_conf.number_of_feature = 62;
   g_conf.max_depth = 5;
   g_conf.iterations = 300;
   g_conf.shrinkage = 0.1F;
@@ -68,11 +68,11 @@ int main(int argc, char *argv[]) {
   assert(r);
 
   if (argc > 9) {
-    g_conf.LoadFeatureCost(argv[9]);
+    g_conf.number_of_feature = boost::lexical_cast<size_t>(argv[9]);
   }
 
   if (argc > 10) {
-    g_conf.number_of_feature = boost::lexical_cast<size_t>(argv[10]);
+    g_conf.LoadFeatureCost(argv[10]);
   }
 
   g_conf.min_leaf_size = d.size() * g_conf.data_sample_ratio / 40;
