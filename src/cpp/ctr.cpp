@@ -63,10 +63,6 @@ int main(int argc, char *argv[]) {
   g_conf.loss = LOG_LIKELIHOOD;
   g_conf.debug = debug > 0? true : false;
 
-  DataVector d;
-  bool r = LoadDataFromFile(train_file, &d);
-  assert(r);
-
   if (argc > 9) {
     g_conf.number_of_feature = boost::lexical_cast<size_t>(argv[9]);
   }
@@ -74,6 +70,10 @@ int main(int argc, char *argv[]) {
   if (argc > 10) {
     g_conf.LoadFeatureCost(argv[10]);
   }
+
+  DataVector d;
+  bool r = LoadDataFromFile(train_file, &d);
+  assert(r);
 
   g_conf.min_leaf_size = d.size() * g_conf.data_sample_ratio / 40;
   std::cout << "configure: " << std::endl

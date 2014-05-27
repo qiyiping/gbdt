@@ -41,6 +41,8 @@ def load_data(filename, n_samples, n_features):
 
 
 if __name__ == '__main__':
+    if len(sys.argv) < 4:
+        print 'USAGE: cmd data samples mapping'
     n_samples = int(sys.argv[2])
     z = load_feature_mapping(sys.argv[3])
     n_features = len(z)
