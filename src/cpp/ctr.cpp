@@ -35,6 +35,9 @@ int main(int argc, char *argv[]) {
   std::string train_file(argv[1]);
   std::string test_file(argv[2]);
 
+  std::cout << "training file: " << train_file << std::endl;
+  std::cout << "testing file: " << test_file << std::endl;
+
   if (argc > 3) {
     g_conf.max_depth = boost::lexical_cast<size_t>(argv[3]);
   }
