@@ -44,7 +44,7 @@ int main(int argc, char *argv[]) {
   DataVector::iterator iter = d.begin();
 
   std::string predict_file = input_file + ".predict";
-  std::ofstream predict_output(predict_file);
+  std::ofstream predict_output(predict_file.c_str());
 
   Auc auc;
   for ( ; iter != d.end(); ++iter) {
