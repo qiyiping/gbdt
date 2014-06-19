@@ -57,7 +57,7 @@ int main(int argc, char *argv[]) {
 
   Elapsed elapsed;
   gbdt.Fit(&d);
-  std::cout << "fit time: " << elapsed.Tell() << std::endl;
+  std::cout << "fit time: " << elapsed.Tell().ToMilliseconds() << std::endl;
   CleanDataVector(&d);
   FreeVector(&d);
 
@@ -98,7 +98,7 @@ int main(int argc, char *argv[]) {
     //           << p << std::endl;
   }
 
-  std::cout << "predict time: " << elapsed.Tell() << std::endl;
+  std::cout << "predict time: " << elapsed.Tell().ToMilliseconds() << std::endl;
   std::cout << "rmse: " << RMSE(d2, predict) << std::endl;
 
   CleanDataVector(&d2);

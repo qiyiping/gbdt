@@ -9,7 +9,6 @@
 #include "auc.hpp"
 
 #include <cstdlib>
-#include <ctime>
 
 #ifdef USE_OPENMP
 #include <omp.h>
@@ -85,7 +84,7 @@ int main(int argc, char *argv[]) {
   GBDT gbdt;
   Elapsed elapsed;
   gbdt.Fit(&d);
-  std::cout << "fit time: " << elapsed.Tell() << std::endl;
+  std::cout << "fit time: " << elapsed.Tell().ToMilliseconds() << std::endl;
 
   std::string model_file = train_file + ".model";
   std::ofstream model_output(model_file.c_str());
@@ -111,7 +110,7 @@ int main(int argc, char *argv[]) {
     predict.push_back(p);
 
   }
-  std::cout << "predict time: " << elapsed.Tell() << std::endl;
+  std::cout << "predict time: " << elapsed.Tell().ToMilliseconds() << std::endl;
 
   std::string predict_file = test_file + ".predict";
   std::ofstream predict_output(predict_file.c_str());
