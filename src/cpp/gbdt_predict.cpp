@@ -8,6 +8,8 @@
 #include <iostream>
 #include <boost/lexical_cast.hpp>
 
+#include "auc.hpp"
+
 using namespace gbdt;
 
 int main(int argc, char *argv[]) {
@@ -29,7 +31,8 @@ int main(int argc, char *argv[]) {
   g_conf.number_of_feature = feature_num;
 
   DataVector d;
-  LoadDataFromFile(argv[3], &d);
+  std::string input_file = argv[3];
+  LoadDataFromFile(input_file, &d);
 
   Loss loss_type = SQUARED_ERROR;
   if (argc > 4 && std::strcmp(argv[4], "logit") == 0) {
@@ -39,31 +42,31 @@ int main(int argc, char *argv[]) {
   g_conf.loss = loss_type;
 
   DataVector::iterator iter = d.begin();
-  PredictVector predict;
-  double *x = new double[feature_num];
+
+  std::string predict_file = input_file + ".predict";
+  std::ofstream predict_output(predict_file);
+
+  Auc auc;
   for ( ; iter != d.end(); ++iter) {
     ValueType p;
-    for (size_t i = 0; i < feature_num; ++i)
-      x[i] = 0.0;
 
     if (loss_type == SQUARED_ERROR) {
-      p = gbdt.Predict(**iter, x);
-      predict.push_back(p);
+      p = gbdt.Predict(**iter);
     } else if (loss_type == LOG_LIKELIHOOD) {
-      p = gbdt.Predict(**iter, x);
+      p = gbdt.Predict(**iter);
       p = Logit(p);
-      predict.push_back(p);
+      auc.Add(p, (*iter)->label);
     }
 
-    std::cout << "tuple: " << (*iter)->ToString() << std::endl
-              << "predict: " << p << std::endl;
-
-    std::cout << "x: ";
-    for (size_t i = 0; i < feature_num; ++i) {
-      std::cout << i << ":" << x[i] << " ";
-    }
-    std::cout << std::endl;
-
+    predict_output << p << " " << (*iter)->ToString() << std::endl;
   }
+
+  if (loss_type == LOG_LIKELIHOOD) {
+    std::cout << "auc: " << auc.CalculateAuc() << std::endl;
+    auc.PrintConfusionTable();
+  }
+
+  CleanDataVector(&d);
+  FreeVector(&d);
   return 0;
 }
