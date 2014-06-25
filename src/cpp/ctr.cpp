@@ -69,15 +69,20 @@ int main(int argc, char *argv[]) {
     g_conf.number_of_feature = boost::lexical_cast<size_t>(argv[9]);
   }
 
+  int max_leafs = 40;
   if (argc > 10) {
-    g_conf.LoadFeatureCost(argv[10]);
+    max_leafs = boost::lexical_cast<int>(argv[10]);
+  }
+
+  if (argc > 11) {
+    g_conf.LoadFeatureCost(argv[11]);
   }
 
   DataVector d;
   bool r = LoadDataFromFile(train_file, &d);
   assert(r);
 
-  g_conf.min_leaf_size = d.size() * g_conf.data_sample_ratio / 40;
+  g_conf.min_leaf_size = d.size() * g_conf.data_sample_ratio / max_leafs;
   std::cout << "configure: " << std::endl
             << g_conf.ToString() << std::endl;
 
