@@ -65,9 +65,9 @@ int main(int argc, char *argv[]) {
   g_conf.debug = debug > 0? true : false;
 
   if (argc > 9) {
-    if (std::strncmp("loglikelihood", argv[9]) == 0) {
+    if (std::strncmp("loglikelihood", argv[9], 20) == 0) {
       g_conf.loss = LOG_LIKELIHOOD;
-    } else if (std::strncmp("squared", argv[9]) == 0) {
+    } else if (std::strncmp("squared", argv[9], 20) == 0) {
       g_conf.loss = SQUARED_ERROR;
     } else {
       std::cerr << "Unknown loss type" << std::endl;
