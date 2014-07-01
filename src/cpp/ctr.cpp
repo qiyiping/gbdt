@@ -9,6 +9,7 @@
 #include "auc.hpp"
 
 #include <cstdlib>
+#include <cstring>
 
 #ifdef USE_OPENMP
 #include <omp.h>
@@ -61,21 +62,30 @@ int main(int argc, char *argv[]) {
   if (argc > 8) {
     debug = boost::lexical_cast<int>(argv[8]);
   }
-
-  g_conf.loss = LOG_LIKELIHOOD;
   g_conf.debug = debug > 0? true : false;
 
   if (argc > 9) {
-    g_conf.number_of_feature = boost::lexical_cast<size_t>(argv[9]);
+    if (std::strncmp("loglikelihood", argv[9]) == 0) {
+      g_conf.loss = LOG_LIKELIHOOD;
+    } else if (std::strncmp("squared", argv[9]) == 0) {
+      g_conf.loss = SQUARED_ERROR;
+    } else {
+      std::cerr << "Unknown loss type" << std::endl;
+      return -1;
+    }
+  }
+
+  if (argc > 10) {
+    g_conf.number_of_feature = boost::lexical_cast<size_t>(argv[10]);
   }
 
   int max_leafs = 40;
-  if (argc > 10) {
-    max_leafs = boost::lexical_cast<int>(argv[10]);
+  if (argc > 11) {
+    max_leafs = boost::lexical_cast<int>(argv[11]);
   }
 
-  if (argc > 11) {
-    g_conf.LoadFeatureCost(argv[11]);
+  if (argc > 12) {
+    g_conf.LoadFeatureCost(argv[12]);
   }
 
   DataVector d;
@@ -111,9 +121,12 @@ int main(int argc, char *argv[]) {
   DataVector::iterator iter = d2.begin();
   PredictVector predict;
   for ( ; iter != d2.end(); ++iter) {
-    ValueType p = Logit(gbdt.Predict(**iter));
-    predict.push_back(p);
-
+    ValueType t = gbdt.Predict(**iter);
+    if (g_conf.loss == LOG_LIKELIHOOD) {
+      predict.push_back(Logit(t));
+    } else {
+      predict.push_back(t);
+    }
   }
   std::cout << "predict time: " << elapsed.Tell().ToMilliseconds() << std::endl;
 
