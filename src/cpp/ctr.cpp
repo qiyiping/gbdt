@@ -84,8 +84,14 @@ int main(int argc, char *argv[]) {
     max_leafs = boost::lexical_cast<int>(argv[11]);
   }
 
+  int enable_initial_guess = 0;
   if (argc > 12) {
-    g_conf.LoadFeatureCost(argv[12]);
+    enable_initial_guess = boost::lexical_cast<int>(argv[12]);
+  }
+  g_conf.enable_initial_guess = enable_initial_guess > 0? true : false;
+
+  if (argc > 13) {
+    g_conf.LoadFeatureCost(argv[13]);
   }
 
   DataVector d;

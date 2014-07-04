@@ -19,7 +19,8 @@ std::string Configure::ToString() const {
     << "data sample ratio = " << data_sample_ratio << std::endl
     << "debug enabled = " << debug << std::endl
     << "loss type = " << (loss == SQUARED_ERROR? "squared error" : "log likelihood") << std::endl
-    << "feature enabled = " << enable_feature_tunning << std::endl;
+    << "feature enabled = " << enable_feature_tunning << std::endl
+    << "initial guess enabled = " << enable_initial_guess << std::endl;
   return s.str();
 }
 

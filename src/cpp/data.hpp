@@ -26,7 +26,8 @@ class Tuple {
       feature(NULL),
       label(0),
       target(0),
-      weight(0) {}
+      weight(0),
+      initial_guess(UnknownValue) {}
 
   ~Tuple() {
     delete[] feature;
@@ -41,6 +42,8 @@ class Tuple {
   ValueType label;
   ValueType target;
   ValueType weight;
+
+  ValueType initial_guess;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(Tuple);

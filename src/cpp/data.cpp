@@ -14,7 +14,12 @@ std::string Tuple::ToString() const {
   if (feature == NULL)
     return std::string();
 
-  std::string result = boost::lexical_cast<std::string>(label);
+  std::string result;
+  if (g_conf.enable_initial_guess) {
+    result += boost::lexical_cast<std::string>(initial_guess);
+    result += kItemDelimiter;
+  }
+  result += boost::lexical_cast<std::string>(label);
   result += kItemDelimiter;
   result += boost::lexical_cast<std::string>(weight);
 
@@ -40,20 +45,24 @@ Tuple* Tuple::FromString(const std::string &l) {
   }
 
   std::vector<std::string> tokens;
-  if (SplitString(l, kItemDelimiter, &tokens) < 2) {
+  if (SplitString(l, kItemDelimiter, &tokens) < (g_conf.enable_initial_guess? 3:2)) {
     delete result;
     return NULL;
   }
 
-  result->label = boost::lexical_cast<ValueType>(tokens[0]);
-  result->weight = boost::lexical_cast<ValueType>(tokens[1]);
+  size_t cur = 0;
+  if (g_conf.enable_initial_guess) {
+    result->initial_guess = boost::lexical_cast<ValueType>(tokens[cur++]);
+  }
+  result->label = boost::lexical_cast<ValueType>(tokens[cur++]);
+  result->weight = boost::lexical_cast<ValueType>(tokens[cur++]);
 
   // for two-class classifier, labels should be 1 or -1
   if (g_conf.loss == LOG_LIKELIHOOD) {
     result->label = result->label > 0? 1 : -1;
   }
 
-  for (size_t i = 2; i < tokens.size(); ++i) {
+  for (size_t i = cur; i < tokens.size(); ++i) {
     size_t found = tokens[i].find(kKVDelimiter);
     if (found == std::string::npos) {
       std::cerr << "feature value pair with wrong format: " << tokens[i];

@@ -21,6 +21,10 @@ ValueType GBDT::Predict(const Tuple &t, size_t n) const {
   assert(n <= iterations);
 
   ValueType r = bias;
+  if (g_conf.enable_initial_guess) {
+    r = t.initial_guess;
+  }
+
   for (size_t i = 0; i < n; ++i) {
     r += shrinkage * trees[i].Predict(t);
   }
@@ -35,6 +39,10 @@ ValueType GBDT::Predict(const Tuple &t, size_t n, double *p) const {
   assert(n <= iterations);
 
   ValueType r = bias;
+  if (g_conf.enable_initial_guess) {
+    r = t.initial_guess;
+  }
+
   for (size_t i = 0; i < n; ++i) {
     r += shrinkage * trees[i].Predict(t, p);
   }
@@ -44,6 +52,10 @@ ValueType GBDT::Predict(const Tuple &t, size_t n, double *p) const {
 
 void GBDT::Init(const DataVector &d, size_t len) {
   assert(d.size() >= len);
+
+  if (g_conf.enable_initial_guess) {
+    return;
+  }
 
   double s = 0;
   double c = 0;
