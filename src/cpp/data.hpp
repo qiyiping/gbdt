@@ -27,7 +27,7 @@ class Tuple {
       label(0),
       target(0),
       weight(0),
-      initial_guess(UnknownValue) {}
+      initial_guess(kUnknownValue) {}
 
   ~Tuple() {
     delete[] feature;
