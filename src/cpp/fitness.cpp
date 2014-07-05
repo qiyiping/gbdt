@@ -220,9 +220,9 @@ ValueType LogitOptimalValue(const DataVector &d, size_t len) {
   double s = 0;
   double c = 0;
   for (size_t i = 0; i < len; ++i) {
-    s += d[i]->target;
+    s += d[i]->target * d[i]->weight;
     double y = Abs(d[i]->target);
-    c += y*(2-y);
+    c += y*(2-y) * d[i]->weight;
   }
 
   return static_cast<ValueType> (s / c);
