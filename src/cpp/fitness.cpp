@@ -63,7 +63,7 @@ bool FindSplit(DataVector *data, size_t m,
   double best_fitness = std::numeric_limits<double>::max();
 
   std::vector<int> fv;
-  for (size_t i = 0; i < n; ++i) {
+  for (int i = 0; i < n; ++i) {
     fv.push_back(i);
   }
 
