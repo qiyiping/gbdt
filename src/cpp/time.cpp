@@ -5,7 +5,7 @@
 namespace gbdt {
 time_t TimeTFromTimeString(const std::string &time_string, const std::string &format) {
   time_t ret = -1;
-  struct tm tm = {0};
+  struct tm tm = {0}; // gcc will complain: `missing initializer'
   if (strptime(time_string.c_str(), format.c_str(), &tm) != NULL) {
     ret = mktime(&tm);
   }

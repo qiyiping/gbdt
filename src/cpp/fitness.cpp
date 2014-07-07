@@ -63,7 +63,7 @@ bool FindSplit(DataVector *data, size_t m,
   double best_fitness = std::numeric_limits<double>::max();
 
   std::vector<int> fv;
-  for (int i = 0; i < n; ++i) {
+  for (size_t i = 0; i < n; ++i) {
     fv.push_back(i);
   }
 
@@ -225,7 +225,11 @@ ValueType LogitOptimalValue(const DataVector &d, size_t len) {
     c += y*(2-y) * d[i]->weight;
   }
 
-  return static_cast<ValueType> (s / c);
+  if (c == 0) {
+    return static_cast<ValueType>(0);
+  } else {
+    return static_cast<ValueType> (s / c);
+  }
 }
 
 }

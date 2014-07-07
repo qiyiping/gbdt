@@ -20,9 +20,9 @@ class Configure {
   size_t number_of_feature;      // number of features
   size_t max_depth;              // max depth for each tree
   size_t iterations;             // number of trees in gbdt
-  float shrinkage;               // shrinkage parameter
-  float feature_sample_ratio;    // portion of features to be splited
-  float data_sample_ratio;       // portion of data to be fitted in each iteration
+  double shrinkage;               // shrinkage parameter
+  double feature_sample_ratio;    // portion of features to be splited
+  double data_sample_ratio;       // portion of data to be fitted in each iteration
   size_t min_leaf_size;          // min number of nodes in leaf
 
   Loss loss;                     // loss type

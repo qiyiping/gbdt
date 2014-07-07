@@ -9,7 +9,8 @@
 #include "util.hpp"
 
 namespace gbdt {
-typedef float ValueType;
+// typedef float ValueType;
+typedef double ValueType;
 const ValueType kValueTypeMax = std::numeric_limits<ValueType>::max();
 const ValueType kValueTypeMin = std::numeric_limits<ValueType>::min();
 const ValueType kUnknownValue = kValueTypeMin;
