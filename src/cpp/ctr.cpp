@@ -142,7 +142,9 @@ int main(int argc, char *argv[]) {
   Auc auc;
   for (size_t i = 0; i < d2.size(); ++i) {
     predict_output << predict[i] << " " << d2[i]->ToString() << std::endl;
-    auc.Add(predict[i], d2[i]->label);
+    for (int s = 0; s < d2[i]->weight; ++s) {
+      auc.Add(predict[i], d2[i]->label);
+    }
   }
   std::cout << "auc: " << auc.CalculateAuc() << std::endl;
   auc.PrintConfusionTable();
