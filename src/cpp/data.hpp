@@ -34,9 +34,8 @@ class Tuple {
     delete[] feature;
   }
 
-  static Tuple* FromString(const std::string &l);
-
-  std::string ToString() const;
+  static Tuple* FromString(const std::string &l, bool load_initial_guess=false);
+  std::string ToString(bool output_initial_guess=false) const;
 
  public:
   ValueType *feature;
@@ -52,8 +51,7 @@ class Tuple {
 
 typedef std::vector<Tuple *> DataVector;
 void CleanDataVector(DataVector *data);
-bool LoadDataFromFile(const std::string &path, DataVector *data);
-bool LoadDataFromFile(const std::string &path, DataVector *data, bool ignore_weight);
+bool LoadDataFromFile(const std::string &path, DataVector *data, bool load_initial_guess=false, bool ignore_weight=false);
 
 typedef std::vector<ValueType> PredictVector;
 }

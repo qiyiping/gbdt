@@ -13,13 +13,12 @@ int main(int argc, char *argv[]) {
 
   g_conf.number_of_feature = 3;
   g_conf.max_depth = 4;
-  g_conf.iterations = 100;
+  g_conf.iterations = 50;
   g_conf.shrinkage = 0.1F;
 
-  if (argc < 3) return -1;
+  if (argc < 2) return -1;
 
   std::string train_file(argv[1]);
-  std::string test_file(argv[2]);
 
   if (argc > 3) {
     g_conf.max_depth = boost::lexical_cast<int>(argv[3]);
@@ -66,42 +65,10 @@ int main(int argc, char *argv[]) {
   model_output << gbdt.Save();
 
   double *g = gbdt.GetGain();
+  std::cout << "feature index\tfeature gain" << std::endl;
   for (size_t i = 0; i < g_conf.number_of_feature; ++i) {
     std::cout << i << "\t" << g[i] << std::endl;
   }
-
-  GBDT gbdt2;
-  gbdt2.Load(gbdt.Save());
-
-  DataVector d2;
-  r = LoadDataFromFile(test_file, &d2);
-  assert(r);
-
-  elapsed.Reset();
-  DataVector::iterator iter = d2.begin();
-  PredictVector predict;
-  for ( ; iter != d2.end(); ++iter) {
-    ValueType p;
-    if (g_conf.loss == SQUARED_ERROR) {
-      p = gbdt2.Predict(**iter);
-      predict.push_back(p);
-    } else if (g_conf.loss == LOG_LIKELIHOOD) {
-      p = gbdt2.Predict(**iter);
-      p = Logit(p);
-      if (p >= 0.5)
-        p = 1;
-      else
-        p = -1;
-      predict.push_back(p);
-    }
-    // std::cout << (*iter)->ToString() << std::endl
-    //           << p << std::endl;
-  }
-
-  std::cout << "predict time: " << elapsed.Tell().ToMilliseconds() << std::endl;
-  std::cout << "rmse: " << RMSE(d2, predict) << std::endl;
-
-  CleanDataVector(&d2);
 
   return 0;
 }

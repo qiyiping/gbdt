@@ -10,12 +10,12 @@ namespace gbdt {
 static const std::string kItemDelimiter = " ";
 static const std::string kKVDelimiter = ":";
 
-std::string Tuple::ToString() const {
+std::string Tuple::ToString(bool output_initial_guess) const {
   if (feature == NULL)
     return std::string();
 
   std::string result;
-  if (g_conf.enable_initial_guess) {
+  if (output_initial_guess) {
     result += boost::lexical_cast<std::string>(initial_guess);
     result += kItemDelimiter;
   }
@@ -36,7 +36,7 @@ std::string Tuple::ToString() const {
   return result;
 }
 
-Tuple* Tuple::FromString(const std::string &l) {
+Tuple* Tuple::FromString(const std::string &l, bool load_initial_guess) {
   Tuple* result = new Tuple();
   size_t n = g_conf.number_of_feature;
   result->feature = new ValueType[n];
@@ -45,13 +45,13 @@ Tuple* Tuple::FromString(const std::string &l) {
   }
 
   std::vector<std::string> tokens;
-  if (SplitString(l, kItemDelimiter, &tokens) < (g_conf.enable_initial_guess? 3:2)) {
+  if (SplitString(l, kItemDelimiter, &tokens) < (load_initial_guess? 3:2)) {
     delete result;
     return NULL;
   }
 
   size_t cur = 0;
-  if (g_conf.enable_initial_guess) {
+  if (load_initial_guess) {
     result->initial_guess = boost::lexical_cast<ValueType>(tokens[cur++]);
   }
   result->label = boost::lexical_cast<ValueType>(tokens[cur++]);
@@ -87,7 +87,7 @@ void CleanDataVector(DataVector *data) {
   }
 }
 
-bool LoadDataFromFile(const std::string &path, DataVector *data, bool ignore_weight) {
+bool LoadDataFromFile(const std::string &path, DataVector *data, bool load_initial_guess, bool ignore_weight) {
   data->clear();
   std::ifstream stream(path.c_str());
   if (!stream) {
@@ -100,7 +100,7 @@ bool LoadDataFromFile(const std::string &path, DataVector *data, bool ignore_wei
 
   std::string l;
   while(std::getline(stream, l)) {
-    Tuple *t = Tuple::FromString(l);
+    Tuple *t = Tuple::FromString(l, load_initial_guess);
     if (ignore_weight) {
       t->weight = 1;
     }
@@ -110,10 +110,6 @@ bool LoadDataFromFile(const std::string &path, DataVector *data, bool ignore_wei
   delete[] local_buffer;
 
   return true;
-}
-
-bool LoadDataFromFile(const std::string &path, DataVector *data) {
-  return LoadDataFromFile(path, data, false);
 }
 
 }

@@ -95,7 +95,7 @@ int main(int argc, char *argv[]) {
   }
 
   DataVector d;
-  bool r = LoadDataFromFile(train_file, &d);
+  bool r = LoadDataFromFile(train_file, &d, true);
   assert(r);
 
   g_conf.min_leaf_size = d.size() * g_conf.data_sample_ratio / max_leafs;
@@ -120,7 +120,7 @@ int main(int argc, char *argv[]) {
   }
 
   DataVector d2;
-  r = LoadDataFromFile(test_file, &d2);
+  r = LoadDataFromFile(test_file, &d2, true);
   assert(r);
 
   elapsed.Reset();

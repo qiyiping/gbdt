@@ -1,13 +1,13 @@
 header_files = data.hpp fitness.hpp tree.hpp util.hpp config.hpp gbdt.hpp time.hpp auc.hpp
 object_files = data.o fitness.o tree.o util.o config.o gbdt.o auc.o time.o
 
-tests = data_unittest tree_unittest gbdt_unittest
+tests = data_unittest tree_unittest
 
 CXX = g++
 CXXFLAGS = -Wall -Wextra -Wconversion -pedantic -fopenmp -O2
 #CXXFLAGS = -Wall -Wextra -Wconversion -pedantic -fopenmp -O2 -DUSE_OPENMP
 
-all: libgbdt.a $(tests) ctr gbdt_predict
+all: libgbdt.a $(tests) ctr gbdt_predict gbdt_train
 
 data.o: $(header_files) data.cpp
 	$(CXX) -c $(CXXFLAGS) data.cpp
@@ -49,8 +49,8 @@ data_unittest: libgbdt.a data_unittest.cpp
 tree_unittest: libgbdt.a tree_unittest.cpp
 	$(CXX) $(CXXFLAGS) -o tree_unittest tree_unittest.cpp libgbdt.a
 
-gbdt_unittest: libgbdt.a gbdt_unittest.cpp
-	$(CXX) $(CXXFLAGS) -o gbdt_unittest gbdt_unittest.cpp libgbdt.a
+gbdt_train: libgbdt.a gbdt_train.cpp
+	$(CXX) $(CXXFLAGS) -o gbdt_train gbdt_train.cpp libgbdt.a
 
 clean:
-	rm $(object_files) $(tests) libgbdt.a ctr gbdt_predict
+	rm $(object_files) $(tests) libgbdt.a ctr gbdt_predict gbdt_train

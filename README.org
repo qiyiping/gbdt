@@ -1,4 +1,39 @@
 * Gradient Boosting Regression Tree
+** Quick Start
++ Download the code: `git clone https://github.com/qiyiping/gbdt.git'
++ Run `make' to compile ([[http:www.boost.org][boost]] is required)
++ Run the demo script: ./demo.sh
+** Data Format
+[InitalGuess] Label Weight Index0:Value0 Index1:Value1 ..
+
+Each line contains an instance and is ended by a '\n' character.
+Inital guess is optional. For two-class classification, Label is -1
+or 1. For regression, Label is the target value, which can be any
+real number. Feature Index starts from 0. Feature Value can be any
+real number.
+** Training Configuration
+#+BEGIN_SRC C++
+class Configure {
+ public:
+  size_t number_of_feature;      // number of features
+  size_t max_depth;              // max depth for each tree
+  size_t iterations;             // number of trees in gbdt
+  double shrinkage;               // shrinkage parameter
+  double feature_sample_ratio;    // portion of features to be splited
+  double data_sample_ratio;       // portion of data to be fitted in each iteration
+  size_t min_leaf_size;          // min number of nodes in leaf
+
+  Loss loss;                     // loss type
+
+  bool debug;                    // show debug info?
+
+  double *feature_costs;         // mannually set feature costs in order to tune the model
+  bool enable_feature_tunning;   // when set true, `feature_costs' is used to tune the model
+
+  bool enable_initial_guess;
+...
+};
+#+END_SRC
 ** Reference
 + Friedman, J. H. "Greedy Function Approximation: A Gradient Boosting Machine." (February 1999)
 + Friedman, J. H. "Stochastic Gradient Boosting." (March 1999)

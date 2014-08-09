@@ -47,11 +47,13 @@ int main(int argc, char *argv[]) {
   std::ofstream predict_output(predict_file.c_str());
 
   Auc auc;
+  double sum = 0.0;
   for ( ; iter != d.end(); ++iter) {
     ValueType p;
 
     if (loss_type == SQUARED_ERROR) {
       p = gbdt.Predict(**iter);
+      sum += Squared(p - (*iter)->label) * (*iter)->weight;
     } else if (loss_type == LOG_LIKELIHOOD) {
       p = gbdt.Predict(**iter);
       p = Logit(p);
@@ -61,7 +63,9 @@ int main(int argc, char *argv[]) {
     predict_output << p << " " << (*iter)->ToString() << std::endl;
   }
 
-  if (loss_type == LOG_LIKELIHOOD) {
+  if (loss_type == SQUARED_ERROR) {
+    std::cout << "rmse: " << std::sqrt(sum / d.size()) << std::endl;
+  } else {
     std::cout << "auc: " << auc.CalculateAuc() << std::endl;
     auc.PrintConfusionTable();
   }
