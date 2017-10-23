@@ -5,52 +5,51 @@
 #include <cassert>
 #include <boost/lexical_cast.hpp>
 #include "time.hpp"
+#include "cmd_option.hpp"
+
+#ifdef USE_OPENMP
+#include <omp.h>
+#endif
 
 using namespace gbdt;
 
 int main(int argc, char *argv[]) {
+  CmdOption opt = CmdOption::ParseOptions(argc, argv);
+
+#ifdef USE_OPENMP
+  const int threads_wanted = opt.Get<int>("num_of_threads", 4);
+  omp_set_num_threads(threads_wanted);
+#endif
   std::srand ( unsigned ( std::time(0) ) );
 
-  g_conf.number_of_feature = 3;
-  g_conf.max_depth = 4;
-  g_conf.iterations = 50;
-  g_conf.shrinkage = 0.1F;
-
-  if (argc < 2) return -1;
-
-  std::string train_file(argv[1]);
-
-  if (argc > 3) {
-    g_conf.max_depth = boost::lexical_cast<int>(argv[3]);
+  g_conf.number_of_feature = opt.Get<int>("feature_size", 0);
+  g_conf.max_depth = opt.Get<int>("max_depth", 0);
+  g_conf.iterations = opt.Get<int>("iterations", 0);
+  g_conf.shrinkage = opt.Get<double>("shrinkage", 0.0);
+  g_conf.feature_sample_ratio = opt.Get<double>("feature_ratio", 1.0);
+  g_conf.data_sample_ratio = opt.Get<double>("data_ratio", 1.0);
+  g_conf.debug = opt.Get<bool>("debug", false);
+  g_conf.min_leaf_size = opt.Get<int>("min_leaf_size", 0);
+  std::string loss_type = opt.Get<std::string>("loss", "");
+  if (loss_type == "LOG_LIKELIHOOD") {
+    g_conf.loss = LOG_LIKELIHOOD;
+  } else if (loss_type == "SQUARED_ERROR") {
+    g_conf.loss = SQUARED_ERROR;
+  } else {
+    std::cerr << "unknown loss type: " << loss_type << std::endl;
+    return -1;
   }
 
-  if (argc > 4) {
-    g_conf.iterations = boost::lexical_cast<int>(argv[4]);
-  }
+  std::cout << g_conf.ToString() << std::endl;
 
-  if (argc > 5) {
-    g_conf.shrinkage = boost::lexical_cast<float>(argv[5]);
+  std::string train_file = opt.Get<std::string>("train_file", "");
+  if (train_file.empty()) {
+    std::cerr << "please specify train file" << std::endl;
   }
-
-  if (argc > 6) {
-    g_conf.feature_sample_ratio = boost::lexical_cast<float>(argv[6]);
-  }
-
-  if (argc > 7) {
-    g_conf.data_sample_ratio = boost::lexical_cast<float>(argv[7]);
-  }
-
-  g_conf.debug = true;
-  // g_conf.loss = LOG_LIKELIHOOD;
-  g_conf.loss = SQUARED_ERROR;
 
   DataVector d;
   bool r = LoadDataFromFile(train_file, &d);
   assert(r);
-
-  // g_conf.min_leaf_size = d.size() / 10;
-
-  std::cout << g_conf.ToString() << std::endl;
 
   GBDT gbdt;
 

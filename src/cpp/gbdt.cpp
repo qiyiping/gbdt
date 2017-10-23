@@ -8,6 +8,7 @@
 #include <cassert>
 #include <algorithm>
 #include <boost/lexical_cast.hpp>
+#include "time.hpp"
 
 #ifdef USE_OPENMP
 #include <parallel/algorithm>  // openmp
@@ -85,17 +86,17 @@ void GBDT::Fit(DataVector *d) {
   Init(*d, d->size());
 
   for (size_t i = 0; i < g_conf.iterations; ++i) {
+    Elapsed elapsed;
     std::cout  << "iteration: " << i << std::endl;
 
     if (samples < d->size()) {
-#ifndef USE_OPENMP
       std::random_shuffle(d->begin(), d->end());
-#else
-      __gnu_parallel::random_shuffle(d->begin(), d->end());
-#endif
     }
 
     if (g_conf.loss == SQUARED_ERROR) {
+#ifdef USE_OPENMP
+#pragma omp parallel for
+#endif
       for (size_t j = 0; j < samples; ++j) {
         ValueType p = Predict(*(*d)[j], i);
         (*d)[j]->target = (*d)[j]->label - p;
@@ -113,6 +114,9 @@ void GBDT::Fit(DataVector *d) {
         std::cout << "rmse: " << std::sqrt(s / c) << std::endl;
       }
     } else if (g_conf.loss == LOG_LIKELIHOOD) {
+#ifdef USE_OPENMP
+#pragma omp parallel for
+#endif
       for (size_t j = 0; j < samples; ++j) {
         ValueType p = Predict(*(*d)[j], i);
         (*d)[j]->target =
@@ -131,6 +135,9 @@ void GBDT::Fit(DataVector *d) {
     }
 
     trees[i].Fit(d, samples);
+    if (g_conf.debug) {
+      std::cout << "iteration time: " << elapsed.Tell().ToMilliseconds() << std::endl;
+    }
   }
 
 

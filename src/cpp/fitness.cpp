@@ -73,21 +73,26 @@ bool FindSplit(DataVector *data, size_t m,
     std::random_shuffle(fv.begin(), fv.end());
   }
 
+  ValueType *v = new ValueType[fn];
+  double *impurity = new double[fn];
+  double *g = new double[fn];
+
+  #ifdef USE_OPENMP
+  #pragma omp parallel for
+  #endif
   for (size_t k = 0; k < fn; ++k) {
-    int i = fv[k];
-    ValueType v;
-    double impurity;
-    double g;
-    if (GetImpurity(data, m, i, &v, &impurity, &g)) {
-      // Choose feature with smallest impurity to split.  If there's
-      // no unknown value, it's equivalent to choose feature with
-      // largest gain
-      if (best_fitness > impurity) {
-        best_fitness = impurity;
-        *index = i;
-        *value = v;
-        *gain = g;
-      }
+    GetImpurity(data, m, fv[k], &v[k], &impurity[k], &g[k]);
+  }
+
+  for (size_t k = 0; k < fn; ++k) {
+    // Choose feature with smallest impurity to split.  If there's
+    // no unknown value, it's equivalent to choose feature with
+    // largest gain
+    if (best_fitness > impurity[k]) {
+      best_fitness = impurity[k];
+      *index = fv[k];
+      *value = v[k];
+      *gain = g[k];
     }
   }
 
@@ -101,20 +106,19 @@ bool GetImpurity(DataVector *data, size_t len,
   *value = kUnknownValue;
   *gain = 0;
 
-#ifndef USE_OPENMP
-  std::sort(data->begin(), data->begin() + len, TupleCompare(index));
-#else
-  __gnu_parallel::sort(data->begin(), data->begin() + len, TupleCompare(index));
-#endif
+  DataVector data_copy = DataVector(data->begin(), data->end());
+
+  std::sort(data_copy.begin(), data_copy.begin() + len, TupleCompare(index));
+
   size_t unknown = 0;
   double s = 0;
   double ss = 0;
   double c = 0;
 
-  while (unknown < len && (*data)[unknown]->feature[index] == kUnknownValue) {
-    s += (*data)[unknown]->target * (*data)[unknown]->weight;
-    ss += Squared((*data)[unknown]->target) * (*data)[unknown]->weight;
-    c += (*data)[unknown]->weight;
+  while (unknown < len && data_copy[unknown]->feature[index] == kUnknownValue) {
+    s += data_copy[unknown]->target * data_copy[unknown]->weight;
+    ss += Squared(data_copy[unknown]->target) * data_copy[unknown]->weight;
+    c += data_copy[unknown]->weight;
     unknown++;
   }
 
@@ -132,9 +136,9 @@ bool GetImpurity(DataVector *data, size_t len,
   ss = 0;
   c = 0;
   for (size_t j = unknown; j < len; ++j) {
-    s += (*data)[j]->target * (*data)[j]->weight;
-    ss += Squared((*data)[j]->target) * (*data)[j]->weight;
-    c += (*data)[j]->weight;
+    s += data_copy[j]->target * data_copy[j]->weight;
+    ss += Squared(data_copy[j]->target) * data_copy[j]->weight;
+    c += data_copy[j]->weight;
   }
 
   double fitness00 = c > 1? (ss - s*s/c) : 0;
@@ -143,9 +147,9 @@ bool GetImpurity(DataVector *data, size_t len,
   double rs = s, rss = ss, rc = c;
   double fitness1 = 0, fitness2 = 0;
   for (size_t j = unknown; j < len-1; ++j) {
-    s = (*data)[j]->target * (*data)[j]->weight;
-    ss = Squared((*data)[j]->target) * (*data)[j]->weight;
-    c = (*data)[j]->weight;
+    s = data_copy[j]->target * data_copy[j]->weight;
+    ss = Squared(data_copy[j]->target) * data_copy[j]->weight;
+    c = data_copy[j]->weight;
 
     ls += s;
     lss += ss;
@@ -155,8 +159,8 @@ bool GetImpurity(DataVector *data, size_t len,
     rss -= ss;
     rc -= c;
 
-    ValueType f1 = (*data)[j]->feature[index];
-    ValueType f2 = (*data)[j+1]->feature[index];
+    ValueType f1 = data_copy[j]->feature[index];
+    ValueType f2 = data_copy[j+1]->feature[index];
     if (AlmostEqual(f1, f2))
       continue;
 

@@ -10,11 +10,15 @@
 
 #include "auc.hpp"
 
+#include "cmd_option.hpp"
+
 using namespace gbdt;
 
 int main(int argc, char *argv[]) {
+  CmdOption opt = CmdOption::ParseOptions(argc, argv);
+
   std::string model;
-  std::ifstream stream(argv[1]);
+  std::ifstream stream(opt.Get<std::string>("model", ""));
   assert(stream);
 
   stream.seekg(0, std::ios::end);
@@ -26,20 +30,25 @@ int main(int argc, char *argv[]) {
   GBDT gbdt;
   gbdt.Load(model);
 
-  size_t feature_num = boost::lexical_cast<size_t>(argv[2]);
+  size_t feature_num = opt.Get<size_t>("feature_size", 0);
 
   g_conf.number_of_feature = feature_num;
 
   DataVector d;
-  std::string input_file = argv[3];
+  std::string input_file = opt.Get<std::string>("input", "");
   LoadDataFromFile(input_file, &d);
 
-  Loss loss_type = SQUARED_ERROR;
-  if (argc > 4 && std::strcmp(argv[4], "logit") == 0) {
-    loss_type = LOG_LIKELIHOOD;
+  std::string loss_str = opt.Get<std::string>("loss", "");
+  if (loss_str == "LOG_LIKELIHOOD") {
+    g_conf.loss = LOG_LIKELIHOOD;
+  } else if (loss_str == "SQUARED_ERROR") {
+    g_conf.loss = SQUARED_ERROR;
+  } else {
+    std::cerr << "unknown loss type: " << loss_str << std::endl;
+    return -1;
   }
 
-  g_conf.loss = loss_type;
+  Loss loss_type = g_conf.loss;
 
   DataVector::iterator iter = d.begin();
 

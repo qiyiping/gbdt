@@ -18,17 +18,19 @@ def load_data(filename, n):
 
 import sys
 import math
+import time
 if __name__ == '__main__':
     x, y = load_data(sys.argv[1], int(sys.argv[3]))
     x1, y1 = load_data(sys.argv[2], int(sys.argv[3]))
 
+    start_ts = time.time()
     est = GradientBoostingRegressor(n_estimators=100,
                                     learning_rate=0.1,
                                     max_depth=int(sys.argv[4]),
                                     random_state=0,
                                     loss='ls').fit(x, y)
+    end_ts = time.time()
+    print "time to fit: ", (end_ts - start_ts)
 
     y1est = est.predict(x1)
     print math.sqrt(mean_squared_error(y1, y1est))
-
-    print y1est

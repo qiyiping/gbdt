@@ -5,9 +5,18 @@
 #include <boost/lexical_cast.hpp>
 #include <fstream>
 
+#ifdef USE_OPENMP
+#include <omp.h>
+#endif
+
 using namespace gbdt;
 
 int main(int argc, char *argv[]) {
+#ifdef USE_OPENMP
+  const int threads_wanted = 4;
+  omp_set_num_threads(threads_wanted);
+#endif
+
   g_conf.number_of_feature = 3;
   g_conf.max_depth = 4;
   if (argc > 1) {
