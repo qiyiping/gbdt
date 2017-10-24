@@ -19,7 +19,7 @@ cmd="./src/cpp/gbdt_train -feature_size 3 \
                           -data_ratio 1.0 \
                           -debug 0 \
                           -min_leaf_size 0 \
-                          -loss SQUARED_ERROR \
+                          -loss LAD \
                           -num_of_threads 16"
 $cmd
 
@@ -35,4 +35,13 @@ $cmd
 echo -------------------
 echo sklearn test
 echo -------------------
-python ./src/py/sklearn_gbrt_test.py ./data/train.txt ./data/test.txt 3 4
+cmd="python ./src/py/sklearn_gbrt_test.py \
+   --feature_size 3 \
+   --train_file ./data/train.txt \
+   --test_file ./data/test.txt \
+   --max_depth 4 \
+   --iterations 100 \
+   --shrinkage 0.1 \
+   --loss lad"
+
+$cmd

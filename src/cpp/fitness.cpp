@@ -275,10 +275,15 @@ ValueType WeightedResidualMedian(DataVector &d, size_t len) {
 
   ValueType weighted_median = 0.0;
   double weight = 0.0;
-  for (size_t i = 0; i < len; ++i) {
+  for (int i = 0; i < len; ++i) {
     weight += d[i]->weight;
     if (weight * 2 > all_weight) {
-      weighted_median = d[i]->residual;
+      if (i-1 >= 0) {
+        weighted_median = (d[i]->residual + d[i-1]->residual) / 2.0;
+      } else {
+        weighted_median = d[i]->residual;
+      }
+
       break;
     }
   }
@@ -298,10 +303,14 @@ ValueType WeightedLabelMedian(DataVector &d, size_t len) {
 
   ValueType weighted_median = 0.0;
   double weight = 0.0;
-  for (size_t i = 0; i < len; ++i) {
+  for (int i = 0; i < len; ++i) {
     weight += d[i]->weight;
     if (weight * 2 > all_weight) {
-      weighted_median = d[i]->label;
+      if (i-1 >= 0) {
+        weighted_median = (d[i]->label + d[i-1]->label) / 2.0;
+      } else {
+        weighted_median = d[i]->label;
+      }
       break;
     }
   }
