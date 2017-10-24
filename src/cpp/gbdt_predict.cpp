@@ -46,6 +46,8 @@ int main(int argc, char *argv[]) {
     return -1;
   }
 
+  std::cout << g_conf.ToString() << std::endl;
+
   Loss loss_type = g_conf.loss;
 
   DataVector::iterator iter = d.begin();
@@ -55,26 +57,31 @@ int main(int argc, char *argv[]) {
 
   Auc auc;
   double sum = 0.0;
+  double cnt = 0.0;
   for ( ; iter != d.end(); ++iter) {
-    ValueType p;
+    ValueType p = gbdt.Predict(**iter);
 
     if (loss_type == SQUARED_ERROR) {
-      p = gbdt.Predict(**iter);
       sum += Squared(p - (*iter)->label) * (*iter)->weight;
+      cnt += (*iter)->weight;
     } else if (loss_type == LOG_LIKELIHOOD) {
-      p = gbdt.Predict(**iter);
       p = Logit(p);
       auc.Add(p, (*iter)->label);
+    } else if (loss_type == LAD) {
+      sum += Abs(p - (*iter)->label) * (*iter)->weight;
+      cnt += (*iter)->weight;
     }
 
     predict_output << p << " " << (*iter)->ToString() << std::endl;
   }
 
   if (loss_type == SQUARED_ERROR) {
-    std::cout << "rmse: " << std::sqrt(sum / d.size()) << std::endl;
-  } else {
+    std::cout << "rmse: " << std::sqrt(sum / cnt) << std::endl;
+  } else if (loss_type == LOG_LIKELIHOOD) {
     std::cout << "auc: " << auc.CalculateAuc() << std::endl;
     auc.PrintConfusionTable();
+  } else if (loss_type == LAD) {
+    std::cout << "mae: " << sum / cnt << std::endl;
   }
 
   CleanDataVector(&d);

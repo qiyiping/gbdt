@@ -20,6 +20,19 @@ Loss StringToLoss(const std::string &str) {
   }
 }
 
+std::string LossToString(Loss loss) {
+  switch(loss) {
+    case LOG_LIKELIHOOD:
+      return "LOG_LIKELIHOOD";
+    case SQUARED_ERROR:
+      return "SQUARED_ERROR";
+    case LAD:
+      return "LAD";
+    default:
+      return "UNKNOWN_LOSS";
+  }
+}
+
 std::string Configure::ToString() const {
   std::stringstream s;
   s << "number of features = " << number_of_feature << std::endl
@@ -30,7 +43,7 @@ std::string Configure::ToString() const {
     << "feature sample ratio = " << feature_sample_ratio << std::endl
     << "data sample ratio = " << data_sample_ratio << std::endl
     << "debug enabled = " << debug << std::endl
-    << "loss type = " << (loss == SQUARED_ERROR? "squared error" : "log likelihood") << std::endl
+    << "loss type = " << LossToString(loss) << std::endl
     << "feature tuning enabled = " << enable_feature_tunning << std::endl
     << "initial guess enabled = " << enable_initial_guess << std::endl;
   return s.str();

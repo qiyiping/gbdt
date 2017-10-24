@@ -18,6 +18,7 @@ enum Loss {
 };
 
 Loss StringToLoss(const std::string &str);
+std::string LossToString(Loss loss);
 
 // Training settings
 class Configure {

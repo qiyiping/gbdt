@@ -1,6 +1,6 @@
 import numpy as np
-from sklearn.ensemble import GradientBoostingRegressor
-from sklearn.metrics import mean_squared_error
+from sklearn.ensemble import GradientBoostingRegressor, GradientBoostingClassifier
+from sklearn.metrics import mean_squared_error, mean_absolute_error, roc_auc_score
 import argparse
 
 def load_data(filename, n):
@@ -34,13 +34,25 @@ if __name__ == '__main__':
     x1, y1 = load_data(args.test_file, args.feature_size)
 
     start_ts = time.time()
-    est = GradientBoostingRegressor(n_estimators=args.iterations,
-                                    learning_rate=args.shrinkage,
-                                    max_depth=args.max_depth,
-                                    random_state=0,
-                                    loss=args.loss).fit(x, y)
+    if args.loss != 'log':
+        est = GradientBoostingRegressor(n_estimators=args.iterations,
+                                        learning_rate=args.shrinkage,
+                                        max_depth=args.max_depth,
+                                        random_state=0,
+                                        loss=args.loss).fit(x, y)
+    else:
+        est = GradientBoostingClassifier(loss='deviance',
+                                         n_estimators=args.iterations,
+                                         learning_rate=args.shrinkage,
+                                         max_depth=args.max_depth)
+
     end_ts = time.time()
     print "time to fit: ", (end_ts - start_ts)
 
     y1est = est.predict(x1)
-    print math.sqrt(mean_squared_error(y1, y1est))
+    if args.loss == 'ls':
+        print math.sqrt(mean_squared_error(y1, y1est))
+    elif args.loss == 'lad':
+        print mean_absolute_error(y1, y1est)
+    elif args.loss == 'log':
+        print roc_auc_score(y1, y1est)

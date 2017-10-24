@@ -29,7 +29,7 @@ echo -------------------
 cmd="./src/cpp/gbdt_predict -model ./data/train.txt.model \
                             -feature_size 3 \
                             -input ./data/test.txt \
-                            -loss SQUARED_ERROR"
+                            -loss LAD"
 $cmd
 
 echo -------------------
