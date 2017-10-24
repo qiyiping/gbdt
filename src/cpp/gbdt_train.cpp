@@ -31,12 +31,11 @@ int main(int argc, char *argv[]) {
   g_conf.debug = opt.Get<bool>("debug", false);
   g_conf.min_leaf_size = opt.Get<int>("min_leaf_size", 0);
   std::string loss_type = opt.Get<std::string>("loss", "");
-  if (loss_type == "LOG_LIKELIHOOD") {
-    g_conf.loss = LOG_LIKELIHOOD;
-  } else if (loss_type == "SQUARED_ERROR") {
-    g_conf.loss = SQUARED_ERROR;
-  } else {
-    std::cerr << "unknown loss type: " << loss_type << std::endl;
+
+  g_conf.loss = StringToLoss(loss_type);
+  if (g_conf.loss == UNKNOWN_LOSS) {
+    std::cerr << "unknown loss type: " << loss_type << std::endl
+              << "possible loss type are SQUARED_ERROR, LOG_LIKELIHOOD and LAD" << std::endl;
     return -1;
   }
 

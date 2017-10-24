@@ -51,13 +51,7 @@ ValueType GBDT::Predict(const Tuple &t, size_t n, double *p) const {
   return r;
 }
 
-void GBDT::Init(const DataVector &d, size_t len) {
-  assert(d.size() >= len);
-
-  if (g_conf.enable_initial_guess) {
-    return;
-  }
-
+double LabelAverage(const DataVector &d, size_t len) {
   double s = 0;
   double c = 0;
   for (size_t i = 0; i < len; ++i) {
@@ -65,12 +59,23 @@ void GBDT::Init(const DataVector &d, size_t len) {
     c += d[i]->weight;
   }
 
-  double v = s / c;
+  return s / c;
+}
+
+void GBDT::Init(DataVector &d, size_t len) {
+  assert(d.size() >= len);
+
+  if (g_conf.enable_initial_guess) {
+    return;
+  }
 
   if (g_conf.loss == SQUARED_ERROR) {
-    bias = static_cast<ValueType>(v);
+    bias = static_cast<ValueType>(LabelAverage(d, len));
   } else if (g_conf.loss == LOG_LIKELIHOOD) {
+    double v = LabelAverage(d, len);
     bias = static_cast<ValueType>(std::log((1+v) / (1-v)) / 2.0);
+  } else if (g_conf.loss == LAD) {
+    bias = WeightedLabelMedian(d, len);
   }
 }
 
@@ -94,44 +99,11 @@ void GBDT::Fit(DataVector *d) {
     }
 
     if (g_conf.loss == SQUARED_ERROR) {
-#ifdef USE_OPENMP
-#pragma omp parallel for
-#endif
-      for (size_t j = 0; j < samples; ++j) {
-        ValueType p = Predict(*(*d)[j], i);
-        (*d)[j]->target = (*d)[j]->label - p;
-      }
-
-      if (g_conf.debug) {
-        double s = 0;
-        double c = 0;
-        DataVector::iterator iter = d->begin();
-        for ( ; iter != d->end(); ++iter) {
-          ValueType p = Predict(**iter, i);
-          s += Squared((*iter)->label - p) * (*iter)->weight;
-          c += (*iter)->weight;
-        }
-        std::cout << "rmse: " << std::sqrt(s / c) << std::endl;
-      }
+      SquareLossProcess(d, samples, i);
     } else if (g_conf.loss == LOG_LIKELIHOOD) {
-#ifdef USE_OPENMP
-#pragma omp parallel for
-#endif
-      for (size_t j = 0; j < samples; ++j) {
-        ValueType p = Predict(*(*d)[j], i);
-        (*d)[j]->target =
-            static_cast<ValueType>(LogitLossGradient((*d)[j]->label, p));
-      }
-
-      if (g_conf.debug) {
-        Auc auc;
-        DataVector::iterator iter = d->begin();
-        for ( ; iter != d->end(); ++iter) {
-          ValueType p = Logit(Predict(**iter, i));
-          auc.Add(p, (*iter)->label);
-        }
-        std::cout << "auc: " << auc.CalculateAuc() << std::endl;
-      }
+      LogLossProcess(d, samples, i);
+    } else if (g_conf.loss == LAD) {
+      LADLossProcess(d, samples, i);
     }
 
     trees[i].Fit(d, samples);
@@ -186,4 +158,72 @@ GBDT::~GBDT() {
   delete[] trees;
   delete[] gain;
 }
+
+
+void GBDT::SquareLossProcess(DataVector *d, size_t samples, int i) {
+#ifdef USE_OPENMP
+#pragma omp parallel for
+#endif
+  for (size_t j = 0; j < samples; ++j) {
+    ValueType p = Predict(*(*d)[j], i);
+    (*d)[j]->target = (*d)[j]->label - p;
+  }
+
+  if (g_conf.debug) {
+    double s = 0;
+    double c = 0;
+    DataVector::iterator iter = d->begin();
+    for ( ; iter != d->end(); ++iter) {
+      ValueType p = Predict(**iter, i);
+      s += Squared((*iter)->label - p) * (*iter)->weight;
+      c += (*iter)->weight;
+    }
+    std::cout << "rmse: " << std::sqrt(s / c) << std::endl;
+  }
+}
+
+void GBDT::LogLossProcess(DataVector *d, size_t samples, int i) {
+#ifdef USE_OPENMP
+#pragma omp parallel for
+#endif
+  for (size_t j = 0; j < samples; ++j) {
+    ValueType p = Predict(*(*d)[j], i);
+    (*d)[j]->target =
+        static_cast<ValueType>(LogitLossGradient((*d)[j]->label, p));
+  }
+
+  if (g_conf.debug) {
+    Auc auc;
+    DataVector::iterator iter = d->begin();
+    for ( ; iter != d->end(); ++iter) {
+      ValueType p = Logit(Predict(**iter, i));
+      auc.Add(p, (*iter)->label);
+    }
+    std::cout << "auc: " << auc.CalculateAuc() << std::endl;
+  }
+}
+
+void GBDT::LADLossProcess(DataVector *d, size_t samples, int i) {
+#ifdef USE_OPENMP
+#pragma omp parallel for
+#endif
+  for (size_t j = 0; j < samples; ++j) {
+    ValueType p = Predict(*(*d)[j], i);
+    (*d)[j]->residual = (*d)[j]->label - p;
+    (*d)[j]->target = Sign((*d)[j]->residual);
+  }
+
+  if (g_conf.debug) {
+    double s = 0;
+    double c = 0;
+    for (auto iter = d->begin(); iter != d->end(); ++iter) {
+      ValueType p = Predict(**iter, i);
+      s += Abs((*iter)->label - p) * (*iter)->weight;
+      c += (*iter)->weight;
+    }
+    std::cout << "mae: " << s/c << std::endl;
+  }
+}
+
+
 }

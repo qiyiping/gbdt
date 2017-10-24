@@ -10,9 +10,14 @@
 namespace gbdt {
 
 enum Loss {
-  SQUARED_ERROR,                 // regression with squared error loss
-  LOG_LIKELIHOOD                 // two-class logistic regression and classification
+  SQUARED_ERROR,                  // regression with squared error loss
+  LOG_LIKELIHOOD,                 // two-class logistic regression and
+                                  // classification
+  LAD,                            // least absolute deviations
+  UNKNOWN_LOSS
 };
+
+Loss StringToLoss(const std::string &str);
 
 // Training settings
 class Configure {

@@ -20,6 +20,19 @@ struct TupleCompare {
 
   int index;
 };
+
+struct ResidualCompare {
+  bool operator () (const gbdt::Tuple *t1, const gbdt::Tuple *t2) {
+    return t1->residual < t2->residual;
+  }
+};
+
+struct LabelCompare {
+  bool operator () (const gbdt::Tuple *t1, const gbdt::Tuple *t2) {
+    return t1->label < t2->label;
+  }
+};
+
 }
 
 namespace gbdt {
@@ -218,6 +231,20 @@ double RMSE(const DataVector &data, const PredictVector &predict, size_t len) {
   return std::sqrt(s / c);
 }
 
+double MAE(const DataVector &data, const PredictVector &predict, size_t len) {
+  assert(data.size() >= len);
+  assert(predict.size() >= len);
+  double s = 0;
+  double c = 0;
+
+  for (size_t i = 0; i < data.size(); ++i) {
+    s += Abs(predict[i] - data[i]->label) * data[i]->weight;
+    c += data[i]->weight;
+  }
+
+  return s / c;
+}
+
 ValueType LogitOptimalValue(const DataVector &d, size_t len) {
   assert(d.size() >= len);
 
@@ -234,6 +261,52 @@ ValueType LogitOptimalValue(const DataVector &d, size_t len) {
   } else {
     return static_cast<ValueType> (s / c);
   }
+}
+
+ValueType WeightedResidualMedian(DataVector &d, size_t len) {
+  assert(d.size() >= len);
+  // simplest implementation using sorting
+  // sophisticated approch to find the weighted median is selection algorithm(partition algorithm).
+  std::sort(d.begin(), d.begin() + len, ResidualCompare());
+  double all_weight = 0.0;
+  for (size_t i = 0; i < len; ++i) {
+    all_weight += d[i]->weight;
+  }
+
+  ValueType weighted_median = 0.0;
+  double weight = 0.0;
+  for (size_t i = 0; i < len; ++i) {
+    weight += d[i]->weight;
+    if (weight * 2 > all_weight) {
+      weighted_median = d[i]->residual;
+      break;
+    }
+  }
+
+  return weighted_median;
+}
+
+ValueType WeightedLabelMedian(DataVector &d, size_t len) {
+  assert(d.size() >= len);
+  // simplest implementation using sorting
+  // sophisticated approch to find the weighted median is selection algorithm(partition algorithm).
+  std::sort(d.begin(), d.begin() + len, LabelCompare());
+  double all_weight = 0.0;
+  for (size_t i = 0; i < len; ++i) {
+    all_weight += d[i]->weight;
+  }
+
+  ValueType weighted_median = 0.0;
+  double weight = 0.0;
+  for (size_t i = 0; i < len; ++i) {
+    weight += d[i]->weight;
+    if (weight * 2 > all_weight) {
+      weighted_median = d[i]->label;
+      break;
+    }
+  }
+
+  return weighted_median;
 }
 
 }

@@ -5,6 +5,7 @@
 #include "data.hpp"
 #include <cmath>
 #include <cassert>
+#include <algorithm>
 
 namespace gbdt {
 bool AlmostEqual(ValueType v1, ValueType v2);
@@ -17,6 +18,7 @@ bool GetImpurity(DataVector *data, size_t len,
                  double *impurity, double *gain);
 void SplitData(const DataVector &data, size_t len, int index, ValueType value, DataVector *output);
 double RMSE(const DataVector &data, const PredictVector &predict, size_t len);
+double MAE(const DataVector &data, const PredictVector &predict, size_t len);
 
 inline
 bool Same(const DataVector &data) {
@@ -46,6 +48,12 @@ double RMSE(const DataVector &data, const PredictVector &predict) {
   return RMSE(data, predict, data.size());
 }
 
+inline
+double MAE(const DataVector &data, const PredictVector &predict) {
+  assert(data.size() == predict.size());
+  return MAE(data, predict, data.size());
+}
+
 template <typename T>
 T Squared(const T &v) {
   return v * v;
@@ -56,8 +64,27 @@ T Abs(const T &v) {
   return v >= 0? v : -v;
 }
 
+template <typename T>
+T Sign(const T &v) {
+  return v > 0? 1 : -1;
+}
+
+template <typename T, typename Compare>
+T Median(std::vector<T> &data, size_t len, Compare comp) {
+  assert(data.size() > len);
+  std::nth_element(data.begin(),
+                   data.begin() + len / 2,
+                   data.begin() + len,
+                   comp);
+  return data[len / 2];
+}
+
 ///////////////////////////////////////////////////////////////////////
 // Following functions are for gradient boosting classifier
+///////////////////////////////////////////////////////////////////////
+
+///////////////////////////////////////////////////////////////////////
+// Two class classification
 //
 // y \in {-1, 1}
 // Pr(y=1) = 1/(1+exp(-2F(x)))
@@ -90,6 +117,42 @@ double LogitLossGradient(ValueType y, ValueType f) {
 
 
 ValueType LogitOptimalValue(const DataVector &d, size_t len);
+
+
+///////////////////////////////////////////////////////////////////////
+// LAD
+//
+// y \in R
+//
+// Loss function:
+// L(y, F(x)) = |y-F(x)|
+//
+// Gradient:
+// d = sign(F(x)-y)
+//
+// Optimal terminal node value (approximated):
+// rj = median({y_ji-F(x_ji)})
+///////////////////////////////////////////////////////////////////////
+
+inline
+double LADLoss(ValueType y, ValueType f) {
+  return Abs(y-f);
+}
+
+inline
+double LADLossGradient(ValueType y, ValueType f) {
+  return Sign(y-f);
+}
+
+ValueType WeightedResidualMedian(DataVector &d, size_t len);
+
+ValueType WeightedLabelMedian(DataVector &d, size_t len);
+
+inline
+ValueType LADOptimalValue(DataVector &d, size_t len) {
+  assert(d.size() >= len);
+  return WeightedResidualMedian(d, len);
+}
 
 }
 

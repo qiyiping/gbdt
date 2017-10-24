@@ -18,6 +18,8 @@ void RegressionTree::Fit(DataVector *data,
     node->pred = Average(*data, len);
   } else if (g_conf.loss == LOG_LIKELIHOOD) {
     node->pred = LogitOptimalValue(*data, len);
+  } else if (g_conf.loss == LAD) {
+    node->pred = LADOptimalValue(*data, len);
   }
 
   if (max_depth == depth

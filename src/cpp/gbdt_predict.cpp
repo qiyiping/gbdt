@@ -39,12 +39,10 @@ int main(int argc, char *argv[]) {
   LoadDataFromFile(input_file, &d);
 
   std::string loss_str = opt.Get<std::string>("loss", "");
-  if (loss_str == "LOG_LIKELIHOOD") {
-    g_conf.loss = LOG_LIKELIHOOD;
-  } else if (loss_str == "SQUARED_ERROR") {
-    g_conf.loss = SQUARED_ERROR;
-  } else {
-    std::cerr << "unknown loss type: " << loss_str << std::endl;
+  g_conf.loss = StringToLoss();
+  if (g_conf.loss == UNKNOWN_LOSS) {
+    std::cerr << "unknown loss type: " << loss_str << std::endl
+              << "possible loss type are SQUARED_ERROR, LOG_LIKELIHOOD and LAD" << std::endl;
     return -1;
   }
 

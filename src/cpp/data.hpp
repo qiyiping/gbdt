@@ -28,6 +28,7 @@ class Tuple {
       label(0),
       target(0),
       weight(0),
+      residual(0),
       initial_guess(kUnknownValue) {}
 
   ~Tuple() {
@@ -42,6 +43,7 @@ class Tuple {
   ValueType label;
   ValueType target;
   ValueType weight;
+  ValueType residual;
 
   ValueType initial_guess;
 

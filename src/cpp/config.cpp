@@ -8,6 +8,18 @@
 namespace gbdt {
 Configure g_conf;
 
+Loss StringToLoss(const std::string &str) {
+  if (str == "LOG_LIKELIHOOD") {
+    return LOG_LIKELIHOOD;
+  } else if (str == "SQUARED_ERROR") {
+    return SQUARED_ERROR;
+  } else if (str == "LAD") {
+    return LAD;
+  } else {
+    return UNKNOWN_LOSS;
+  }
+}
+
 std::string Configure::ToString() const {
   std::stringstream s;
   s << "number of features = " << number_of_feature << std::endl
@@ -19,7 +31,7 @@ std::string Configure::ToString() const {
     << "data sample ratio = " << data_sample_ratio << std::endl
     << "debug enabled = " << debug << std::endl
     << "loss type = " << (loss == SQUARED_ERROR? "squared error" : "log likelihood") << std::endl
-    << "feature enabled = " << enable_feature_tunning << std::endl
+    << "feature tuning enabled = " << enable_feature_tunning << std::endl
     << "initial guess enabled = " << enable_initial_guess << std::endl;
   return s.str();
 }

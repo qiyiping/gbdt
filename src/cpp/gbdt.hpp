@@ -30,7 +30,11 @@ class GBDT {
  private:
   ValueType Predict(const Tuple &t, size_t n) const;
   ValueType Predict(const Tuple &t, size_t n, double *p) const;
-  void Init(const DataVector &d, size_t len);
+  void Init(DataVector &d, size_t len);
+
+  void SquareLossProcess(DataVector *d, size_t samples, int iteration);
+  void LogLossProcess(DataVector *d, size_t samples, int iteration);
+  void LADLossProcess(DataVector *d, size_t samples, int iteration);
  private:
   RegressionTree *trees;
   ValueType bias;
