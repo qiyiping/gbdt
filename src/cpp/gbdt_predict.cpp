@@ -6,7 +6,7 @@
 #include <cassert>
 #include <cstring>
 #include <iostream>
-#include <boost/lexical_cast.hpp>
+#include <algorithm>
 
 #include "auc.hpp"
 
@@ -46,6 +46,8 @@ int main(int argc, char *argv[]) {
     return -1;
   }
 
+  int debug = opt.Get<int>("debug", 0);
+
   std::cout << g_conf.ToString() << std::endl;
 
   Loss loss_type = g_conf.loss;
@@ -58,8 +60,17 @@ int main(int argc, char *argv[]) {
   Auc auc;
   double sum = 0.0;
   double cnt = 0.0;
+  double *gain = new double[feature_num];
+
   for ( ; iter != d.end(); ++iter) {
-    ValueType p = gbdt.Predict(**iter);
+    ValueType p = 0;
+
+    if (debug) {
+      std::fill_n(gain, feature_num, 0.0);
+      p = gbdt.Predict(**iter, gain);
+    } else {
+      p = gbdt.Predict(**iter);
+    }
 
     if (loss_type == SQUARED_ERROR) {
       sum += Squared(p - (*iter)->label) * (*iter)->weight;
@@ -74,6 +85,8 @@ int main(int argc, char *argv[]) {
 
     predict_output << p << " " << (*iter)->ToString() << std::endl;
   }
+
+  delete[] gain;
 
   if (loss_type == SQUARED_ERROR) {
     std::cout << "rmse: " << std::sqrt(sum / cnt) << std::endl;

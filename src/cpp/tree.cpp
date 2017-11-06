@@ -44,9 +44,10 @@ void RegressionTree::Fit(DataVector *data,
   }
 
   // update gain
-  if (gain[node->index] < g) {
-    gain[node->index] = g;
-  }
+  // if (gain[node->index] < g) {
+  //   gain[node->index] = g;
+  // }
+  gain[node->index] += g;
 
   // increase feature cost if certain feature is used
   if (g_conf.feature_costs && g_conf.enable_feature_tunning) {
@@ -89,16 +90,16 @@ ValueType RegressionTree::Predict(const Node *root, const Tuple &t, double *p) {
   if (t.feature[root->index] == kUnknownValue) {
     if (root->child[Node::UNKNOWN]) {
       p[root->index] += (root->child[Node::UNKNOWN]->pred - root->pred);
-      return Predict(root->child[Node::UNKNOWN], t);
+      return Predict(root->child[Node::UNKNOWN], t, p);
     } else {
       return root->pred;
     }
   } else if (t.feature[root->index] < root->value) {
     p[root->index] += (root->child[Node::LT]->pred - root->pred);
-    return Predict(root->child[Node::LT], t);
+    return Predict(root->child[Node::LT], t, p);
   } else {
     p[root->index] += (root->child[Node::GE]->pred - root->pred);
-    return Predict(root->child[Node::GE], t);
+    return Predict(root->child[Node::GE], t, p);
   }
 }
 

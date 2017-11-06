@@ -3,7 +3,6 @@
 #include <iostream>
 #include <fstream>
 #include <cassert>
-#include <boost/lexical_cast.hpp>
 #include "time.hpp"
 #include "cmd_option.hpp"
 
