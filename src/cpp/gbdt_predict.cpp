@@ -83,7 +83,15 @@ int main(int argc, char *argv[]) {
       cnt += (*iter)->weight;
     }
 
-    predict_output << p << " " << (*iter)->ToString() << std::endl;
+    predict_output << "--------------------------" << std::endl
+                   << p << std::endl;
+    if (debug) {
+      for (int i = 0; i < feature_num; ++i) {
+        predict_output << i << ":" << gain[i] << " ";
+      }
+      predict_output << std::endl;
+    }
+    predict_output <<(*iter)->ToString() << std::endl;
   }
 
   delete[] gain;
