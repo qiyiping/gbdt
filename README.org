@@ -2,7 +2,7 @@
 ** Quick Start
 + Download the code: =git clone https://github.com/qiyiping/gbdt.git=
 + Run =make= to compile ([[http:www.boost.org][boost]] is required)
-+ Run the demo script: =./demo.sh=
++ Run the demo script in `test`: =./demo.sh=
 ** Data Format
 [InitalGuess] Label Weight Index0:Value0 Index1:Value1 ..
 
