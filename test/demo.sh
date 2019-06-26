@@ -19,9 +19,9 @@ cmd="../src/cpp/gbdt_train -feature_size 3 \
                            -data_ratio 1.0 \
                            -debug 0 \
                            -min_leaf_size 0 \
-                           -loss LAD \
+                           -loss SquaredError \
                            -num_of_threads 16"
-$cmd
+time $cmd
 
 echo -------------------
 echo start predicting
@@ -30,8 +30,8 @@ cmd="../src/cpp/gbdt_predict -model ../data/train.txt.model \
                              -feature_size 3 \
                              -input ../data/test.txt \
                              -debug 1 \
-                             -loss LAD"
-$cmd
+                             -loss SquaredError"
+time $cmd
 
 echo -------------------
 echo sklearn test
@@ -43,6 +43,6 @@ cmd="python ./sklearn_gbrt_test.py \
      --max_depth 4 \
      --iterations 100 \
      --shrinkage 0.1 \
-     --loss lad"
+     --loss ls"
 
-$cmd
+time $cmd

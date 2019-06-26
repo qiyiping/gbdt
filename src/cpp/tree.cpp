@@ -1,10 +1,21 @@
 // Author: qiyiping@gmail.com (Yiping Qi)
 
 #include "tree.hpp"
-#include "fitness.hpp"
+#include "math_util.hpp"
 #include "util.hpp"
+#include "loss.hpp"
 #include <boost/lexical_cast.hpp>
 #include <cassert>
+
+struct TupleCompare {
+  TupleCompare(int i): index(i) {}
+
+  bool operator () (const gbdt::Tuple *t1, const gbdt::Tuple *t2) {
+    return t1->feature[index] < t2->feature[index];
+  }
+
+  int index;
+};
 
 namespace gbdt {
 void RegressionTree::Fit(DataVector *data,
@@ -12,19 +23,13 @@ void RegressionTree::Fit(DataVector *data,
                          Node *node,
                          size_t depth,
                          double *gain) {
-  size_t max_depth = g_conf.max_depth;
+  size_t max_depth = conf.max_depth;
 
-  if (g_conf.loss == SQUARED_ERROR) {
-    node->pred = Average(*data, len);
-  } else if (g_conf.loss == LOG_LIKELIHOOD) {
-    node->pred = LogitOptimalValue(*data, len);
-  } else if (g_conf.loss == LAD) {
-    node->pred = LADOptimalValue(*data, len);
-  }
+  node->pred = conf.loss->GetRegionPrediction(*data, len);
 
   if (max_depth == depth
       || Same(*data, len)
-      || len <= g_conf.min_leaf_size) {
+      || len <= conf.min_leaf_size) {
     node->leaf = true;
     return;
   }
@@ -50,8 +55,8 @@ void RegressionTree::Fit(DataVector *data,
   gain[node->index] += g;
 
   // increase feature cost if certain feature is used
-  if (g_conf.feature_costs && g_conf.enable_feature_tunning) {
-    g_conf.feature_costs[node->index] += 1.0e-4;
+  if (conf.enable_feature_tunning) {
+    conf.feature_costs[node->index] += 1.0e-4;
   }
 
   node->child[Node::LT] = new Node();
@@ -66,7 +71,7 @@ void RegressionTree::Fit(DataVector *data,
   }
 }
 
-ValueType RegressionTree::Predict(const Node *root, const Tuple &t) {
+ValueType RegressionTree::Predict(const Node *root, const Tuple &t) const {
   if (root->leaf) {
     return root->pred;
   }
@@ -83,7 +88,7 @@ ValueType RegressionTree::Predict(const Node *root, const Tuple &t) {
   }
 }
 
-ValueType RegressionTree::Predict(const Node *root, const Tuple &t, double *p) {
+ValueType RegressionTree::Predict(const Node *root, const Tuple &t, double *p) const {
   if (root->leaf) {
     return root->pred;
   }
@@ -108,8 +113,8 @@ void RegressionTree::Fit(DataVector *data, size_t len) {
   delete root;
   root = new Node();
   delete[] gain;
-  gain = new double[g_conf.number_of_feature];
-  for (size_t i = 0; i < g_conf.number_of_feature; ++i) {
+  gain = new double[conf.number_of_feature];
+  for (size_t i = 0; i < conf.number_of_feature; ++i) {
     gain[i] = 0.0;
   }
   Fit(data, len, root, 0, gain);
@@ -157,7 +162,7 @@ std::string RegressionTree::Save() const {
 
 void RegressionTree::SaveAux(const Node *node,
                              std::vector<const Node *> *nodes,
-                             std::map<const void *, size_t> *position_map) {
+                             std::map<const void *, size_t> *position_map) const {
   if (!node) return;
   nodes->push_back(node);
   position_map->insert(std::make_pair<const void *, size_t>(node, nodes->size() -1));
@@ -206,5 +211,155 @@ void RegressionTree::Load(const std::string &s) {
 
   root = nodes[0];
 }
+
+
+bool RegressionTree::FindSplit(DataVector *data, size_t m,
+                               int *index, ValueType *value, double *gain) {
+  size_t n = conf.number_of_feature;
+  double best_fitness = std::numeric_limits<double>::max();
+
+  std::vector<int> fv;
+  for (int i = 0; i < n; ++i) {
+    fv.push_back(i);
+  }
+
+  size_t fn = n;
+  if (conf.feature_sample_ratio < 1) {
+    fn = static_cast<size_t>(n*conf.feature_sample_ratio);
+    std::random_shuffle(fv.begin(), fv.end());
+  }
+
+  ValueType *v = new ValueType[fn];
+  double *impurity = new double[fn];
+  double *g = new double[fn];
+
+#ifdef USE_OPENMP
+#pragma omp parallel for
+#endif
+  for (size_t k = 0; k < fn; ++k) {
+    GetImpurity(data, m, fv[k], &v[k], &impurity[k], &g[k]);
+  }
+
+  for (size_t k = 0; k < fn; ++k) {
+    // Choose feature with smallest impurity to split.  If there's
+    // no unknown value, it's equivalent to choose feature with
+    // largest gain
+    if (best_fitness > impurity[k]) {
+      best_fitness = impurity[k];
+      *index = fv[k];
+      *value = v[k];
+      *gain = g[k];
+    }
+  }
+
+  return best_fitness != std::numeric_limits<double>::max();
+}
+
+bool RegressionTree::GetImpurity(DataVector *data, size_t len,
+                                 int index, ValueType *value,
+                                 double *impurity, double *gain) {
+  *impurity = std::numeric_limits<double>::max();
+  *value = kUnknownValue;
+  *gain = 0;
+
+  DataVector data_copy = DataVector(data->begin(), data->end());
+
+  std::sort(data_copy.begin(), data_copy.begin() + len, TupleCompare(index));
+
+  size_t unknown = 0;
+  double s = 0;
+  double ss = 0;
+  double c = 0;
+
+  while (unknown < len && data_copy[unknown]->feature[index] == kUnknownValue) {
+    s += data_copy[unknown]->target * data_copy[unknown]->weight;
+    ss += Squared(data_copy[unknown]->target) * data_copy[unknown]->weight;
+    c += data_copy[unknown]->weight;
+    unknown++;
+  }
+
+  if (unknown == len) {
+    return false;
+  }
+
+  double fitness0 = c > 1? (ss - s*s/c) : 0;
+  if (fitness0 < 0) {
+    // std::cerr << "fitness0 < 0: " << fitness0 << std::endl;
+    fitness0 = 0;
+  }
+
+  s = 0;
+  ss = 0;
+  c = 0;
+  for (size_t j = unknown; j < len; ++j) {
+    s += data_copy[j]->target * data_copy[j]->weight;
+    ss += Squared(data_copy[j]->target) * data_copy[j]->weight;
+    c += data_copy[j]->weight;
+  }
+
+  double fitness00 = c > 1? (ss - s*s/c) : 0;
+
+  double ls = 0, lss = 0, lc = 0;
+  double rs = s, rss = ss, rc = c;
+  double fitness1 = 0, fitness2 = 0;
+  for (size_t j = unknown; j < len-1; ++j) {
+    s = data_copy[j]->target * data_copy[j]->weight;
+    ss = Squared(data_copy[j]->target) * data_copy[j]->weight;
+    c = data_copy[j]->weight;
+
+    ls += s;
+    lss += ss;
+    lc += c;
+
+    rs -= s;
+    rss -= ss;
+    rc -= c;
+
+    ValueType f1 = data_copy[j]->feature[index];
+    ValueType f2 = data_copy[j+1]->feature[index];
+    if (AlmostEqual(f1, f2))
+      continue;
+
+    fitness1 = lc > 1? (lss - ls*ls/lc) : 0;
+    if (fitness1 < 0) {
+      // std::cerr << "fitness1 < 0: " << fitness1 << std::endl;
+      fitness1 = 0;
+    }
+
+    fitness2 = rc > 1? (rss - rs*rs/rc) : 0;
+    if (fitness2 < 0) {
+      // std::cerr << "fitness2 < 0: " << fitness2 << std::endl;
+      fitness2 = 0;
+    }
+
+    double fitness = fitness0 + fitness1 + fitness2;
+
+    if (conf.enable_feature_tunning) {
+      fitness *= conf.feature_costs[index];
+    }
+
+    if (*impurity > fitness) {
+      *impurity = fitness;
+      *value = (f1+f2)/2;
+      *gain = fitness00 - fitness1 - fitness2;
+    }
+  }
+
+  return *impurity != std::numeric_limits<double>::max();
+}
+
+void RegressionTree::SplitData(const DataVector &data, size_t len,
+                               int index, ValueType value, DataVector *output) {
+  for (size_t i = 0; i < len; ++i) {
+    if (data[i]->feature[index] == kUnknownValue) {
+      output[Node::UNKNOWN].push_back(data[i]);
+    } else if (data[i]->feature[index] < value) {
+      output[Node::LT].push_back(data[i]);
+    } else {
+      output[Node::GE].push_back(data[i]);
+    }
+  }
+}
+
 
 }

@@ -1,10 +1,10 @@
 #include "gbdt.hpp"
-#include "fitness.hpp"
 #include <iostream>
 #include <fstream>
 #include <cassert>
 #include "time.hpp"
 #include "cmd_option.hpp"
+#include "loss.hpp"
 
 #ifdef USE_OPENMP
 #include <omp.h>
@@ -21,24 +21,26 @@ int main(int argc, char *argv[]) {
 #endif
   std::srand ( unsigned ( std::time(0) ) );
 
-  g_conf.number_of_feature = opt.Get<int>("feature_size", 0);
-  g_conf.max_depth = opt.Get<int>("max_depth", 0);
-  g_conf.iterations = opt.Get<int>("iterations", 0);
-  g_conf.shrinkage = opt.Get<double>("shrinkage", 0.0);
-  g_conf.feature_sample_ratio = opt.Get<double>("feature_ratio", 1.0);
-  g_conf.data_sample_ratio = opt.Get<double>("data_ratio", 1.0);
-  g_conf.debug = opt.Get<bool>("debug", false);
-  g_conf.min_leaf_size = opt.Get<int>("min_leaf_size", 0);
+  Configure conf;
+  conf.number_of_feature = opt.Get<int>("feature_size", 0);
+  conf.max_depth = opt.Get<int>("max_depth", 0);
+  conf.iterations = opt.Get<int>("iterations", 0);
+  conf.shrinkage = opt.Get<double>("shrinkage", 0.0);
+  conf.feature_sample_ratio = opt.Get<double>("feature_ratio", 1.0);
+  conf.data_sample_ratio = opt.Get<double>("data_ratio", 1.0);
+  conf.debug = opt.Get<bool>("debug", false);
+  conf.min_leaf_size = opt.Get<int>("min_leaf_size", 0);
   std::string loss_type = opt.Get<std::string>("loss", "");
 
-  g_conf.loss = StringToLoss(loss_type);
-  if (g_conf.loss == UNKNOWN_LOSS) {
-    std::cerr << "unknown loss type: " << loss_type << std::endl
-              << "possible loss type are SQUARED_ERROR, LOG_LIKELIHOOD and LAD" << std::endl;
+  Objective *objective = LossFactory::GetInstance()->Create(loss_type);
+  if (!objective) {
+    LossFactory::GetInstance()->PrintAllCandidates();
     return -1;
   }
 
-  std::cout << g_conf.ToString() << std::endl;
+  conf.loss.reset(objective);
+
+  std::cout << conf.ToString() << std::endl;
 
   std::string train_file = opt.Get<std::string>("train_file", "");
   if (train_file.empty()) {
@@ -46,10 +48,13 @@ int main(int argc, char *argv[]) {
   }
 
   DataVector d;
-  bool r = LoadDataFromFile(train_file, &d);
+  bool r = LoadDataFromFile(train_file,
+                            &d,
+                            conf.number_of_feature,
+                            loss_type == std::string("LogLoss"));
   assert(r);
 
-  GBDT gbdt;
+  GBDT gbdt(conf);
 
   Elapsed elapsed;
   gbdt.Fit(&d);
@@ -63,7 +68,7 @@ int main(int argc, char *argv[]) {
 
   double *g = gbdt.GetGain();
   std::cout << "feature index\tfeature gain" << std::endl;
-  for (size_t i = 0; i < g_conf.number_of_feature; ++i) {
+  for (size_t i = 0; i < conf.number_of_feature; ++i) {
     std::cout << i << "\t" << g[i] << std::endl;
   }
 

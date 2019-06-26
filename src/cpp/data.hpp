@@ -5,7 +5,6 @@
 #include <limits>
 #include <string>
 #include <vector>
-#include "config.hpp"
 #include "util.hpp"
 
 namespace gbdt {
@@ -35,8 +34,13 @@ class Tuple {
     delete[] feature;
   }
 
-  static Tuple* FromString(const std::string &l, bool load_initial_guess=false);
-  std::string ToString(bool output_initial_guess=false) const;
+  static Tuple* FromString(const std::string &l,
+                           int number_of_feature,
+                           bool two_class_classification,
+                           bool load_initial_guess=false);
+
+  std::string ToString(int number_of_feature,
+                       bool output_initial_guess=false) const;
 
  public:
   ValueType *feature;
@@ -53,7 +57,12 @@ class Tuple {
 
 typedef std::vector<Tuple *> DataVector;
 void CleanDataVector(DataVector *data);
-bool LoadDataFromFile(const std::string &path, DataVector *data, bool load_initial_guess=false, bool ignore_weight=false);
+bool LoadDataFromFile(const std::string &path,
+                      DataVector *data,
+                      int number_of_feature,
+                      bool two_class_classification,
+                      bool load_initial_guess=false,
+                      bool ignore_weight=false);
 
 typedef std::vector<ValueType> PredictVector;
 }

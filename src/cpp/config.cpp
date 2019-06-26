@@ -2,36 +2,11 @@
 #include "util.hpp"
 #include <sstream>
 #include <fstream>
+#include "loss.hpp" // for `Objective'
 
 #include <boost/lexical_cast.hpp>
 
 namespace gbdt {
-Configure g_conf;
-
-Loss StringToLoss(const std::string &str) {
-  if (str == "LOG_LIKELIHOOD") {
-    return LOG_LIKELIHOOD;
-  } else if (str == "SQUARED_ERROR") {
-    return SQUARED_ERROR;
-  } else if (str == "LAD") {
-    return LAD;
-  } else {
-    return UNKNOWN_LOSS;
-  }
-}
-
-std::string LossToString(Loss loss) {
-  switch(loss) {
-    case LOG_LIKELIHOOD:
-      return "LOG_LIKELIHOOD";
-    case SQUARED_ERROR:
-      return "SQUARED_ERROR";
-    case LAD:
-      return "LAD";
-    default:
-      return "UNKNOWN_LOSS";
-  }
-}
 
 std::string Configure::ToString() const {
   std::stringstream s;
@@ -43,7 +18,7 @@ std::string Configure::ToString() const {
     << "feature sample ratio = " << feature_sample_ratio << std::endl
     << "data sample ratio = " << data_sample_ratio << std::endl
     << "debug enabled = " << debug << std::endl
-    << "loss type = " << LossToString(loss) << std::endl
+    << "loss type = " << loss->GetName() << std::endl
     << "feature tuning enabled = " << enable_feature_tunning << std::endl
     << "initial guess enabled = " << enable_initial_guess << std::endl;
   return s.str();
@@ -61,9 +36,9 @@ bool Configure::LoadFeatureCost(const std::string &cost_file) {
   if (!inputstream)
     return false;
 
-  feature_costs = new double[number_of_feature];
+  feature_costs.clear();
   for (size_t i = 0; i < number_of_feature; ++i)
-    feature_costs[i] = 1.0;
+    feature_costs.push_back(1.0);
 
   std::string l;
   while(std::getline(inputstream, l)) {

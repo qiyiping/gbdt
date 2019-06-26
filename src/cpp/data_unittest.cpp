@@ -8,20 +8,24 @@ int main(int argc, char *argv[]) {
   UNUSED(argc);
   UNUSED(argv);
   std::string l = "0 2 0:10 1:100";
-  g_conf.number_of_feature = 3;
-  g_conf.max_depth = 4;
-  g_conf.loss = LOG_LIKELIHOOD;
+  int number_of_feature = 3;
+  bool two_class_classification = true;
 
-  Tuple *t = Tuple::FromString(l);
+  Tuple *t = Tuple::FromString(l,
+                               number_of_feature,
+                               two_class_classification);
 
-  std::cout << t->ToString() << std::endl;
+  std::cout << t->ToString(number_of_feature) << std::endl;
 
   DataVector d;
-  bool r = LoadDataFromFile("../../data/test.dat", &d);
+  bool r = LoadDataFromFile("../../data/test.txt",
+                            &d,
+                            number_of_feature,
+                            two_class_classification);
   assert(r);
   DataVector::iterator iter = d.begin();
   for ( ; iter != d.end(); ++iter) {
-    std::cout << (*iter)->ToString() << std::endl;
+    std::cout << (*iter)->ToString(number_of_feature) << std::endl;
   }
 
   CleanDataVector(&d);

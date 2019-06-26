@@ -1,7 +1,7 @@
 // Author: qiyiping@gmail.com (Yiping Qi)
 
 #include "gbdt.hpp"
-#include "fitness.hpp"
+#include "math_util.hpp"
 #include <fstream>
 #include <cassert>
 #include <cstring>
@@ -9,8 +9,8 @@
 #include <algorithm>
 
 #include "auc.hpp"
-
 #include "cmd_option.hpp"
+#include "loss.hpp"
 
 using namespace gbdt;
 
@@ -27,30 +27,30 @@ int main(int argc, char *argv[]) {
   model.assign(std::istreambuf_iterator<char>(stream),
                std::istreambuf_iterator<char>());
 
-  GBDT gbdt;
-  gbdt.Load(model);
-
-  size_t feature_num = opt.Get<size_t>("feature_size", 0);
-
-  g_conf.number_of_feature = feature_num;
-
-  DataVector d;
-  std::string input_file = opt.Get<std::string>("input", "");
-  LoadDataFromFile(input_file, &d);
-
-  std::string loss_str = opt.Get<std::string>("loss", "");
-  g_conf.loss = StringToLoss(loss_str);
-  if (g_conf.loss == UNKNOWN_LOSS) {
-    std::cerr << "unknown loss type: " << loss_str << std::endl
-              << "possible loss type are SQUARED_ERROR, LOG_LIKELIHOOD and LAD" << std::endl;
+  Configure conf;
+  conf.number_of_feature = opt.Get<size_t>("feature_size", 0);
+  std::string loss_type = opt.Get<std::string>("loss", "");
+  Objective *objective = LossFactory::GetInstance()->Create(loss_type);
+  if (!objective) {
+    LossFactory::GetInstance()->PrintAllCandidates();
     return -1;
   }
 
+  conf.loss.reset(objective);
+
+  std::cout << conf.ToString() << std::endl;
+
+  GBDT gbdt(conf);
+  gbdt.Load(model);
+
+  DataVector d;
+  std::string input_file = opt.Get<std::string>("input", "");
+  LoadDataFromFile(input_file,
+                   &d,
+                   conf.number_of_feature,
+                   loss_type == std::string("LogLoss"));
+
   int debug = opt.Get<int>("debug", 0);
-
-  std::cout << g_conf.ToString() << std::endl;
-
-  Loss loss_type = g_conf.loss;
 
   DataVector::iterator iter = d.begin();
 
@@ -60,25 +60,25 @@ int main(int argc, char *argv[]) {
   Auc auc;
   double sum = 0.0;
   double cnt = 0.0;
-  double *gain = new double[feature_num];
+  double *gain = new double[conf.number_of_feature];
 
   for ( ; iter != d.end(); ++iter) {
     ValueType p = 0;
 
     if (debug) {
-      std::fill_n(gain, feature_num, 0.0);
+      std::fill_n(gain, conf.number_of_feature, 0.0);
       p = gbdt.Predict(**iter, gain);
     } else {
       p = gbdt.Predict(**iter);
     }
 
-    if (loss_type == SQUARED_ERROR) {
+    if (loss_type == std::string("SquaredError")) {
       sum += Squared(p - (*iter)->label) * (*iter)->weight;
       cnt += (*iter)->weight;
-    } else if (loss_type == LOG_LIKELIHOOD) {
+    } else if (loss_type == std::string("LogLoss")) {
       p = Logit(p);
       auc.Add(p, (*iter)->label);
-    } else if (loss_type == LAD) {
+    } else if (loss_type == std::string("LAD")) {
       sum += Abs(p - (*iter)->label) * (*iter)->weight;
       cnt += (*iter)->weight;
     }
@@ -86,22 +86,22 @@ int main(int argc, char *argv[]) {
     predict_output << "--------------------------" << std::endl
                    << p << std::endl;
     if (debug) {
-      for (int i = 0; i < feature_num; ++i) {
+      for (int i = 0; i < conf.number_of_feature; ++i) {
         predict_output << i << ":" << gain[i] << " ";
       }
       predict_output << std::endl;
     }
-    predict_output <<(*iter)->ToString() << std::endl;
+    predict_output <<(*iter)->ToString(conf.number_of_feature) << std::endl;
   }
 
   delete[] gain;
 
-  if (loss_type == SQUARED_ERROR) {
+  if (loss_type == std::string("SquaredError")) {
     std::cout << "rmse: " << std::sqrt(sum / cnt) << std::endl;
-  } else if (loss_type == LOG_LIKELIHOOD) {
+  } else if (loss_type == std::string("LogLoss")) {
     std::cout << "auc: " << auc.CalculateAuc() << std::endl;
     auc.PrintConfusionTable();
-  } else if (loss_type == LAD) {
+  } else if (loss_type == std::string("LAD")) {
     std::cout << "mae: " << sum / cnt << std::endl;
   }
 

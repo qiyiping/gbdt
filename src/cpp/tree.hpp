@@ -2,10 +2,10 @@
 
 #ifndef _TREE_H_
 #define _TREE_H_
-
-#include "data.hpp"
 #include <map>
 #include <vector>
+#include "config.hpp"
+#include "data.hpp"
 
 namespace gbdt {
 class Node {
@@ -45,8 +45,11 @@ class Node {
 
 class RegressionTree {
  public:
-  RegressionTree(): root(NULL), gain(NULL) {}
-  ~RegressionTree() { delete root; delete[] gain; }
+  RegressionTree(const Configure &conf): root(NULL), gain(NULL), conf(conf) {}
+  ~RegressionTree() {
+    delete root;
+    delete[] gain;
+  }
 
   void Fit(DataVector *data) { Fit(data, data->size()); }
   void Fit(DataVector *data, size_t len);
@@ -61,27 +64,40 @@ class RegressionTree {
   double *GetGain() { return gain; }
 
  private:
-  static void Fit(DataVector *data,
-                  Node *node,
-                  size_t depth,
-                  double *gain) { Fit(data, data->size(), node, depth, gain); }
+  void Fit(DataVector *data,
+           Node *node,
+           size_t depth,
+           double *gain) { Fit(data, data->size(), node, depth, gain); }
 
-  static void Fit(DataVector *data,
-                  size_t len,
-                  Node *node,
-                  size_t depth,
-                  double *gain);
+  void Fit(DataVector *data,
+           size_t len,
+           Node *node,
+           size_t depth,
+           double *gain);
 
-  static ValueType Predict(const Node *node, const Tuple &t);
-  static ValueType Predict(const Node *node, const Tuple &t, double *p);
+  ValueType Predict(const Node *node, const Tuple &t) const;
+  ValueType Predict(const Node *node, const Tuple &t, double *p) const;
 
-  static void SaveAux(const Node *node,
-                      std::vector<const Node *> *nodes,
-                      std::map<const void *, size_t> *position_map);
+  void SaveAux(const Node *node,
+               std::vector<const Node *> *nodes,
+               std::map<const void *, size_t> *position_map) const;
+
+ private:
+  bool FindSplit(DataVector *data, size_t len,
+                 int *index, ValueType *value, double *gain);
+  bool GetImpurity(DataVector *data, size_t len,
+                   int index, ValueType *value,
+                   double *impurity, double *gain);
+
+  static void SplitData(const DataVector &data, size_t len, int index, ValueType value, DataVector *output);
+  static void SplitData(const DataVector &data, int index, ValueType value, DataVector *output) {
+    SplitData(data, data.size(), index, value, output);
+  }
 
  private:
   Node *root;
   double *gain;
+  Configure conf;
 
   DISALLOW_COPY_AND_ASSIGN(RegressionTree);
 };

@@ -6,11 +6,13 @@
 namespace gbdt {
 class GBDT {
  public:
-  GBDT(): trees(NULL),
-          bias(0),
-          shrinkage(g_conf.shrinkage),
-          iterations(g_conf.iterations),
-          gain(NULL) {}
+  GBDT(Configure conf): trees(NULL),
+                        bias(0),
+                        conf(conf),
+                        gain(NULL) {
+    shrinkage = conf.shrinkage;
+    iterations = conf.iterations;
+  }
 
   void Fit(DataVector *d);
   ValueType Predict(const Tuple &t) const {
@@ -32,14 +34,25 @@ class GBDT {
   ValueType Predict(const Tuple &t, size_t n, double *p) const;
   void Init(DataVector &d, size_t len);
 
-  void SquareLossProcess(DataVector *d, size_t samples, int iteration);
-  void LogLossProcess(DataVector *d, size_t samples, int iteration);
-  void LADLossProcess(DataVector *d, size_t samples, int iteration);
+  void UpdateGradient(DataVector *d, size_t samples, int iteration);
+
+  void ReleaseTrees() {
+    if (trees) {
+      for (int i = 0; i < iterations; ++i) {
+        delete trees[i];
+      }
+      delete[] trees;
+      trees = NULL;
+    }
+  }
+
  private:
-  RegressionTree *trees;
+  RegressionTree **trees;
   ValueType bias;
   ValueType shrinkage;
   size_t iterations;
+
+  Configure conf;
 
   double *gain;
 

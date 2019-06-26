@@ -10,7 +10,8 @@ namespace gbdt {
 static const std::string kItemDelimiter = " ";
 static const std::string kKVDelimiter = ":";
 
-std::string Tuple::ToString(bool output_initial_guess) const {
+std::string Tuple::ToString(int number_of_feature,
+                            bool output_initial_guess) const {
   if (feature == NULL)
     return std::string();
 
@@ -23,8 +24,7 @@ std::string Tuple::ToString(bool output_initial_guess) const {
   result += kItemDelimiter;
   result += boost::lexical_cast<std::string>(weight);
 
-  size_t n = g_conf.number_of_feature;
-  for (size_t i = 0; i < n; ++i) {
+  for (int i = 0; i < number_of_feature; ++i) {
     if (feature[i] == kUnknownValue)
       continue;
     result += kItemDelimiter;
@@ -36,9 +36,12 @@ std::string Tuple::ToString(bool output_initial_guess) const {
   return result;
 }
 
-Tuple* Tuple::FromString(const std::string &l, bool load_initial_guess) {
+Tuple* Tuple::FromString(const std::string &l,
+                         int number_of_feature,
+                         bool two_class_classification,
+                         bool load_initial_guess) {
   Tuple* result = new Tuple();
-  size_t n = g_conf.number_of_feature;
+  size_t n = number_of_feature;
   result->feature = new ValueType[n];
   for (size_t i = 0; i < n; ++i) {
     result->feature[i] = kUnknownValue;
@@ -58,7 +61,7 @@ Tuple* Tuple::FromString(const std::string &l, bool load_initial_guess) {
   result->weight = boost::lexical_cast<ValueType>(tokens[cur++]);
 
   // for two-class classifier, labels should be 1 or -1
-  if (g_conf.loss == LOG_LIKELIHOOD) {
+  if (two_class_classification) {
     result->label = result->label > 0? 1 : -1;
   }
 
@@ -87,7 +90,12 @@ void CleanDataVector(DataVector *data) {
   }
 }
 
-bool LoadDataFromFile(const std::string &path, DataVector *data, bool load_initial_guess, bool ignore_weight) {
+bool LoadDataFromFile(const std::string &path,
+                      DataVector *data,
+                      int number_of_feature,
+                      bool two_class_classification,
+                      bool load_initial_guess,
+                      bool ignore_weight) {
   data->clear();
   std::ifstream stream(path.c_str());
   if (!stream) {
@@ -100,7 +108,10 @@ bool LoadDataFromFile(const std::string &path, DataVector *data, bool load_initi
 
   std::string l;
   while(std::getline(stream, l)) {
-    Tuple *t = Tuple::FromString(l, load_initial_guess);
+    Tuple *t = Tuple::FromString(l,
+                                 number_of_feature,
+                                 two_class_classification,
+                                 load_initial_guess);
     if (ignore_weight) {
       t->weight = 1;
     }

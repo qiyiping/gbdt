@@ -5,20 +5,14 @@
 
 #include <cstddef> // for size_t
 #include <string>
+#include <memory>
+#include <vector>
+
 
 
 namespace gbdt {
 
-enum Loss {
-  SQUARED_ERROR,                  // regression with squared error loss
-  LOG_LIKELIHOOD,                 // two-class logistic regression and
-                                  // classification
-  LAD,                            // least absolute deviations
-  UNKNOWN_LOSS
-};
-
-Loss StringToLoss(const std::string &str);
-std::string LossToString(Loss loss);
+class Objective;
 
 // Training settings
 class Configure {
@@ -31,11 +25,11 @@ class Configure {
   double data_sample_ratio;       // portion of data to be fitted in each iteration
   size_t min_leaf_size;          // min number of nodes in leaf
 
-  Loss loss;                     // loss type
+  std::shared_ptr<Objective> loss; // loss type
 
   bool debug;                    // show debug info?
 
-  double *feature_costs;         // mannually set feature costs in order to tune the model
+  std::vector<double> feature_costs;         // mannually set feature costs in order to tune the model
   bool enable_feature_tunning;   // when set true, `feature_costs' is used to tune the model
 
   bool enable_initial_guess;
@@ -44,25 +38,21 @@ class Configure {
       feature_sample_ratio(1),
       data_sample_ratio(1),
       min_leaf_size(0),
-      loss(SQUARED_ERROR),
+      loss(NULL),
       debug(false),
-      feature_costs(NULL),
       enable_feature_tunning(false),
       enable_initial_guess(false) {}
 
-  ~Configure() { delete[] feature_costs; }
+  ~Configure() {}
 
   bool LoadFeatureCost(const std::string &cost_file);
   void ResetFeatureCost() {
-    delete[] feature_costs;
-    feature_costs = NULL;
+    feature_costs.clear();
     enable_feature_tunning = false;
   }
 
   std::string ToString() const;
 };
-
-extern Configure g_conf;
 }
 
 #endif /* _CONFIG_H_ */
