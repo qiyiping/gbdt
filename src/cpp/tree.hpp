@@ -90,9 +90,6 @@ class RegressionTree {
                    double *impurity, double *gain);
 
   static void SplitData(const DataVector &data, size_t len, int index, ValueType value, DataVector *output);
-  static void SplitData(const DataVector &data, int index, ValueType value, DataVector *output) {
-    SplitData(data, data.size(), index, value, output);
-  }
 
  private:
   Node *root;

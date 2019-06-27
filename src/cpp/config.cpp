@@ -37,7 +37,7 @@ bool Configure::LoadFeatureCost(const std::string &cost_file) {
     return false;
 
   feature_costs.clear();
-  for (size_t i = 0; i < number_of_feature; ++i)
+  for (int i = 0; i < number_of_feature; ++i)
     feature_costs.push_back(1.0);
 
   std::string l;

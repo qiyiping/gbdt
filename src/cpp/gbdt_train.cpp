@@ -13,24 +13,42 @@
 using namespace gbdt;
 
 int main(int argc, char *argv[]) {
-  CmdOption opt = CmdOption::ParseOptions(argc, argv);
+  CmdOption opt;
+  opt.AddOption("threads", "t", "threads", 4);
+  opt.AddOption("feature_size", "f", "feature_size", OptionType::INT, true);
+  opt.AddOption("max_depth", "d", "max_depth", 4);
+  opt.AddOption("iterations", "n", "iterations", 10);
+  opt.AddOption("shrinkage", "s", "shrinkage", 0.1);
+  opt.AddOption("feature_ratio", "r", "feature_ratio", 1.0);
+  opt.AddOption("data_ratio", "R", "data_ratio", 1.0);
+  opt.AddOption("debug", "D", "debug", false);
+  opt.AddOption("min_leaf_size", "S", "min_leaf_size", 0);
+  opt.AddOption("loss", "l", "loss", "SquaredError");
+  opt.AddOption("train_file", "F", "train_file", OptionType::STRING, true);
+
+  if (!opt.ParseOptions(argc, argv)) {
+    opt.Help();
+    return -1;
+  }
 
 #ifdef USE_OPENMP
-  const int threads_wanted = opt.Get<int>("num_of_threads", 4);
+  int threads_wanted;
+  opt.Get("num_of_threads", &threads_wanted);
   omp_set_num_threads(threads_wanted);
 #endif
-  std::srand ( unsigned ( std::time(0) ) );
+  std::srand ( unsigned ( ::time(0) ) );
 
   Configure conf;
-  conf.number_of_feature = opt.Get<int>("feature_size", 0);
-  conf.max_depth = opt.Get<int>("max_depth", 0);
-  conf.iterations = opt.Get<int>("iterations", 0);
-  conf.shrinkage = opt.Get<double>("shrinkage", 0.0);
-  conf.feature_sample_ratio = opt.Get<double>("feature_ratio", 1.0);
-  conf.data_sample_ratio = opt.Get<double>("data_ratio", 1.0);
-  conf.debug = opt.Get<bool>("debug", false);
-  conf.min_leaf_size = opt.Get<int>("min_leaf_size", 0);
-  std::string loss_type = opt.Get<std::string>("loss", "");
+  opt.Get("feature_size", &conf.number_of_feature);
+  opt.Get("max_depth", &conf.max_depth);
+  opt.Get("iterations", &conf.iterations);
+  opt.Get("shrinkage", &conf.shrinkage);
+  opt.Get("feature_ratio", &conf.feature_sample_ratio);
+  opt.Get("data_ratio", &conf.data_sample_ratio);
+  opt.Get("debug", &conf.debug);
+  opt.Get("min_leaf_size", &conf.min_leaf_size);
+  std::string loss_type;
+  opt.Get("loss", &loss_type);
 
   Objective *objective = LossFactory::GetInstance()->Create(loss_type);
   if (!objective) {
@@ -42,16 +60,14 @@ int main(int argc, char *argv[]) {
 
   std::cout << conf.ToString() << std::endl;
 
-  std::string train_file = opt.Get<std::string>("train_file", "");
-  if (train_file.empty()) {
-    std::cerr << "please specify train file" << std::endl;
-  }
+  std::string train_file;
+  opt.Get("train_file", &train_file);
 
   DataVector d;
   bool r = LoadDataFromFile(train_file,
                             &d,
                             conf.number_of_feature,
-                            loss_type == std::string("LogLoss"));
+                            loss_type == "LogLoss");
   assert(r);
 
   GBDT gbdt(conf);

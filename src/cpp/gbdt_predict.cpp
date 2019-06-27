@@ -15,10 +15,22 @@
 using namespace gbdt;
 
 int main(int argc, char *argv[]) {
-  CmdOption opt = CmdOption::ParseOptions(argc, argv);
+  CmdOption opt;
+  opt.AddOption("model", "m", "model", "");
+  opt.AddOption("feature_size", "s", "feature_size", OptionType::INT, true);
+  opt.AddOption("loss", "l", "loss", "SquaredError");
+  opt.AddOption("input", "i", "input", "");
+  opt.AddOption("debug", "d", "debug", false);
 
+  if (!opt.ParseOptions(argc, argv)) {
+    opt.Help();
+    return -1;
+  }
+
+  std::string model_path;
+  opt.Get("model", &model_path);
   std::string model;
-  std::ifstream stream(opt.Get<std::string>("model", ""));
+  std::ifstream stream(model_path);
   assert(stream);
 
   stream.seekg(0, std::ios::end);
@@ -28,8 +40,9 @@ int main(int argc, char *argv[]) {
                std::istreambuf_iterator<char>());
 
   Configure conf;
-  conf.number_of_feature = opt.Get<size_t>("feature_size", 0);
-  std::string loss_type = opt.Get<std::string>("loss", "");
+  opt.Get("feature_size", &conf.number_of_feature);
+  std::string loss_type;
+  opt.Get("loss", &loss_type);
   Objective *objective = LossFactory::GetInstance()->Create(loss_type);
   if (!objective) {
     LossFactory::GetInstance()->PrintAllCandidates();
@@ -44,13 +57,15 @@ int main(int argc, char *argv[]) {
   gbdt.Load(model);
 
   DataVector d;
-  std::string input_file = opt.Get<std::string>("input", "");
+  std::string input_file;
+  opt.Get("input", &input_file);
   LoadDataFromFile(input_file,
                    &d,
                    conf.number_of_feature,
-                   loss_type == std::string("LogLoss"));
+                   loss_type == "LogLoss");
 
-  int debug = opt.Get<int>("debug", 0);
+  int debug;
+  opt.Get("debug", &debug);
 
   DataVector::iterator iter = d.begin();
 
@@ -72,13 +87,13 @@ int main(int argc, char *argv[]) {
       p = gbdt.Predict(**iter);
     }
 
-    if (loss_type == std::string("SquaredError")) {
+    if (loss_type == "SquaredError") {
       sum += Squared(p - (*iter)->label) * (*iter)->weight;
       cnt += (*iter)->weight;
-    } else if (loss_type == std::string("LogLoss")) {
+    } else if (loss_type == "LogLoss") {
       p = Logit(p);
       auc.Add(p, (*iter)->label);
-    } else if (loss_type == std::string("LAD")) {
+    } else if (loss_type == "LAD") {
       sum += Abs(p - (*iter)->label) * (*iter)->weight;
       cnt += (*iter)->weight;
     }
@@ -96,12 +111,12 @@ int main(int argc, char *argv[]) {
 
   delete[] gain;
 
-  if (loss_type == std::string("SquaredError")) {
+  if (loss_type == "SquaredError") {
     std::cout << "rmse: " << std::sqrt(sum / cnt) << std::endl;
-  } else if (loss_type == std::string("LogLoss")) {
+  } else if (loss_type == "LogLoss") {
     std::cout << "auc: " << auc.CalculateAuc() << std::endl;
     auc.PrintConfusionTable();
-  } else if (loss_type == std::string("LAD")) {
+  } else if (loss_type == "LAD") {
     std::cout << "mae: " << sum / cnt << std::endl;
   }
 

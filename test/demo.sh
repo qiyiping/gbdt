@@ -7,42 +7,59 @@ mkdir -p ../data
 python build_data.py > ../data/train.txt
 python build_data.py > ../data/test.txt
 
+feature_size=3
+train_file="../data/train.txt"
+max_depth=4
+iterations=30
+shrinkage=0.1
+feature_ratio=1.0
+data_ratio=1.0
+debug="false"
+min_leaf_size=0
+loss="LAD"
+sklearn_loss="lad"
+num_of_threads=16
+model="../data/train.txt.model"
+input="../data/test.txt"
+test_file="${input}"
+
 echo -------------------
 echo start training
 echo -------------------
-cmd="../src/cpp/gbdt_train -feature_size 3 \
-                           -train_file ../data/train.txt \
-                           -max_depth 4 \
-                           -iterations 100 \
-                           -shrinkage 0.1 \
-                           -feature_ratio 1.0 \
-                           -data_ratio 1.0 \
-                           -debug 0 \
-                           -min_leaf_size 0 \
-                           -loss SquaredError \
-                           -num_of_threads 16"
+cmd="../src/cpp/gbdt_train --feature_size ${feature_size} \
+                           --train_file ${train_file} \
+                           --max_depth ${max_depth} \
+                           --iterations ${iterations} \
+                           --shrinkage ${shrinkage} \
+                           --feature_ratio ${feature_ratio} \
+                           --data_ratio ${data_ratio} \
+                           --debug ${debug} \
+                           --min_leaf_size ${min_leaf_size} \
+                           --loss ${loss} \
+                           --num_of_threads ${num_of_threads}"
+
 time $cmd
 
 echo -------------------
 echo start predicting
 echo -------------------
-cmd="../src/cpp/gbdt_predict -model ../data/train.txt.model \
-                             -feature_size 3 \
-                             -input ../data/test.txt \
-                             -debug 1 \
-                             -loss SquaredError"
+cmd="../src/cpp/gbdt_predict --model ${model} \
+                             --feature_size ${feature_size} \
+                             --input ${input} \
+                             --debug ${debug} \
+                             --loss ${loss}"
 time $cmd
 
 echo -------------------
 echo sklearn test
 echo -------------------
 cmd="python ./sklearn_gbrt_test.py \
-     --feature_size 3 \
-     --train_file ../data/train.txt \
-     --test_file ../data/test.txt \
-     --max_depth 4 \
-     --iterations 100 \
-     --shrinkage 0.1 \
-     --loss ls"
+     --feature_size ${feature_size} \
+     --train_file ${train_file} \
+     --test_file ${test_file} \
+     --max_depth ${max_depth} \
+     --iterations ${iterations} \
+     --shrinkage ${shrinkage} \
+     --loss ${sklearn_loss}"
 
 time $cmd

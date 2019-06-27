@@ -1,4 +1,4 @@
-header_files = data.hpp math_util.hpp tree.hpp util.hpp config.hpp gbdt.hpp time.hpp auc.hpp cmd_option.hpp loss.hpp
+header_files = data.hpp math_util.hpp tree.hpp util.hpp config.hpp gbdt.hpp time.hpp auc.hpp loss.hpp
 object_files = data.o math_util.o tree.o util.o config.o gbdt.o auc.o time.o loss.o
 
 tests = data_unittest tree_unittest loss_unittest
@@ -49,10 +49,10 @@ tree_unittest: libgbdt.a tree_unittest.cpp
 loss_unittest: libgbdt.a loss_unittest.cpp
 	$(CXX) $(CXXFLAGS) -o loss_unittest loss_unittest.cpp libgbdt.a
 
-gbdt_train: libgbdt.a gbdt_train.cpp
+gbdt_train: libgbdt.a gbdt_train.cpp cmd_option.hpp
 	$(CXX) $(CXXFLAGS) -o gbdt_train gbdt_train.cpp libgbdt.a
 
-gbdt_predict: libgbdt.a gbdt_predict.cpp
+gbdt_predict: libgbdt.a gbdt_predict.cpp cmd_option.hpp
 	$(CXX) $(CXXFLAGS) -o gbdt_predict gbdt_predict.cpp libgbdt.a
 
 clean:

@@ -7,6 +7,8 @@
 #include <boost/lexical_cast.hpp>
 #include <cassert>
 
+namespace {
+
 struct TupleCompare {
   TupleCompare(int i): index(i) {}
 
@@ -16,6 +18,9 @@ struct TupleCompare {
 
   int index;
 };
+
+}
+
 
 namespace gbdt {
 void RegressionTree::Fit(DataVector *data,
