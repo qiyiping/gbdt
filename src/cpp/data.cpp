@@ -1,7 +1,6 @@
 // Author: qiyiping@gmail.com (Yiping Qi)
 
 #include "data.hpp"
-#include <boost/lexical_cast.hpp>
 #include <fstream>
 #include <iostream>
 
@@ -17,20 +16,20 @@ std::string Tuple::ToString(int number_of_feature,
 
   std::string result;
   if (output_initial_guess) {
-    result += boost::lexical_cast<std::string>(initial_guess);
+    result += std::to_string(initial_guess);
     result += kItemDelimiter;
   }
-  result += boost::lexical_cast<std::string>(label);
+  result += std::to_string(label);
   result += kItemDelimiter;
-  result += boost::lexical_cast<std::string>(weight);
+  result += std::to_string(weight);
 
   for (int i = 0; i < number_of_feature; ++i) {
     if (feature[i] == kUnknownValue)
       continue;
     result += kItemDelimiter;
-    result += boost::lexical_cast<std::string>(i);
+    result += std::to_string(i);
     result += kKVDelimiter;
-    result += boost::lexical_cast<std::string>(feature[i]);
+    result += std::to_string(feature[i]);
   }
 
   return result;
@@ -55,10 +54,10 @@ Tuple* Tuple::FromString(const std::string &l,
 
   size_t cur = 0;
   if (load_initial_guess) {
-    result->initial_guess = boost::lexical_cast<ValueType>(tokens[cur++]);
+    result->initial_guess = std::stod(tokens[cur++]);
   }
-  result->label = boost::lexical_cast<ValueType>(tokens[cur++]);
-  result->weight = boost::lexical_cast<ValueType>(tokens[cur++]);
+  result->label = std::stod(tokens[cur++]);
+  result->weight = std::stod(tokens[cur++]);
 
   // for two-class classifier, labels should be 1 or -1
   if (two_class_classification) {
@@ -71,12 +70,12 @@ Tuple* Tuple::FromString(const std::string &l,
       std::cerr << "feature value pair with wrong format: " << tokens[i];
       continue;
     }
-    size_t index = boost::lexical_cast<size_t>(tokens[i].substr(0, found));
+    size_t index = std::stoi(tokens[i].substr(0, found));
     if (index >= n) {
       std::cerr << "feature index out of boundary: " << index;
       continue;
     }
-    ValueType value = boost::lexical_cast<ValueType>(tokens[i].substr(found+1));
+    ValueType value = std::stod(tokens[i].substr(found+1));
     result->feature[index] = value;
   }
 

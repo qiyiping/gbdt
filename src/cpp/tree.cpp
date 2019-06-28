@@ -4,7 +4,6 @@
 #include "math_util.hpp"
 #include "util.hpp"
 #include "loss.hpp"
-#include <boost/lexical_cast.hpp>
 #include <cassert>
 
 namespace {
@@ -143,18 +142,18 @@ std::string RegressionTree::Save() const {
   std::vector<std::string> vs;
   for (size_t i = 0; i < nodes.size(); ++i) {
     std::string ns;
-    ns += boost::lexical_cast<std::string>(nodes[i]->index);
+    ns += std::to_string(nodes[i]->index);
     ns += " ";
-    ns += boost::lexical_cast<std::string>(nodes[i]->value);
+    ns += std::to_string(nodes[i]->value);
     ns += " ";
-    ns += boost::lexical_cast<std::string>(nodes[i]->leaf);
+    ns += std::to_string(nodes[i]->leaf);
     ns += " ";
-    ns += boost::lexical_cast<std::string>(nodes[i]->pred);
+    ns += std::to_string(nodes[i]->pred);
     for (int j = 0; j < Node::CHILDSIZE; ++j) {
       ns += " ";
       if (nodes[i]->child[j]) {
         size_t p = position_map[nodes[i]->child[j]];
-        ns += boost::lexical_cast<std::string>(p);
+        ns += std::to_string(p);
       } else {
         ns += "0";
       }
@@ -191,13 +190,13 @@ void RegressionTree::Load(const std::string &s) {
   for (size_t i = 0; i < vs.size(); ++i) {
     Node *n = new Node();
     SplitString(vs[i], " ", &items);
-    n->index = boost::lexical_cast<int>(items[0]);
-    n->value = boost::lexical_cast<ValueType>(items[1]);
-    n->leaf = boost::lexical_cast<bool>(items[2]);
-    n->pred = boost::lexical_cast<ValueType>(items[3]);
-    lt.push_back(boost::lexical_cast<int>(items[4]));
-    ge.push_back(boost::lexical_cast<int>(items[5]));
-    un.push_back(boost::lexical_cast<int>(items[6]));
+    n->index = std::stoi(items[0]);
+    n->value = std::stod(items[1]);
+    n->leaf = std::stoi(items[2]);
+    n->pred = std::stod(items[3]);
+    lt.push_back(std::stoi(items[4]));
+    ge.push_back(std::stoi(items[5]));
+    un.push_back(std::stoi(items[6]));
 
     nodes.push_back(n);
   }

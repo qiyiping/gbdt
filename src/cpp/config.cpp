@@ -4,8 +4,6 @@
 #include <fstream>
 #include "loss.hpp" // for `Objective'
 
-#include <boost/lexical_cast.hpp>
-
 namespace gbdt {
 
 std::string Configure::ToString() const {
@@ -45,8 +43,8 @@ bool Configure::LoadFeatureCost(const std::string &cost_file) {
     if (l.empty() || l[0] == '#')
       continue;
     size_t found = l.find(":");
-    int idx = boost::lexical_cast<int>(l.substr(0, found));
-    double cost = boost::lexical_cast<double>(l.substr(found+1));
+    int idx = std::stoi(l.substr(0, found));
+    double cost = std::stod(l.substr(found+1));
     feature_costs[idx] = cost;
   }
 

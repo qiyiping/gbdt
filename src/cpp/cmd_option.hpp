@@ -175,11 +175,11 @@ class CmdOption {
             info->is_set = true;
             break;
           case OptionType::INT:
-            info->val.int_val = atoi(argv[i]);
+            info->val.int_val = std::stoi(argv[i]);
             info->is_set = true;
             break;
           case OptionType::DOUBLE:
-            info->val.double_val = atof(argv[i]);
+            info->val.double_val = std::stod(argv[i]);
             info->is_set = true;
             break;
           case OptionType::BOOL:

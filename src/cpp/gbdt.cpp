@@ -8,7 +8,6 @@
 #include <cmath>
 #include <cassert>
 #include <algorithm>
-#include <boost/lexical_cast.hpp>
 #include "time.hpp"
 
 #ifdef USE_OPENMP
@@ -111,8 +110,8 @@ void GBDT::Fit(DataVector *d) {
 
 std::string GBDT::Save() const {
   std::vector<std::string> vs;
-  vs.push_back(boost::lexical_cast<std::string>(shrinkage));
-  vs.push_back(boost::lexical_cast<std::string>(bias));
+  vs.push_back(std::to_string(shrinkage));
+  vs.push_back(std::to_string(bias));
   for (size_t i = 0; i < iterations; ++i) {
     vs.push_back(trees[i]->Save());
   }
@@ -125,8 +124,8 @@ void GBDT::Load(const std::string &s) {
   SplitString(s, "\n;\n", &vs);
 
   iterations = vs.size() - 2;
-  shrinkage = boost::lexical_cast<ValueType>(vs[0]);
-  bias = boost::lexical_cast<ValueType>(vs[1]);
+  shrinkage = std::stod(vs[0]);
+  bias = std::stod(vs[1]);
 
   ReleaseTrees();
 

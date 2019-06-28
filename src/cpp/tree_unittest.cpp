@@ -1,7 +1,6 @@
 #include "tree.hpp"
 #include <iostream>
 #include <cassert>
-#include <boost/lexical_cast.hpp>
 #include <fstream>
 
 #include "loss.hpp"
