@@ -16,6 +16,7 @@ feature_ratio=1.0
 data_ratio=1.0
 debug="true"
 min_leaf_size=0
+# options: "SquaredError(ls), LAD(lad), LogLoss(logloss)"
 loss="LogLoss"
 sklearn_loss="logloss"
 num_of_threads=16
