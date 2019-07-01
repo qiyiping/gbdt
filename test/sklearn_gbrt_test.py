@@ -33,19 +33,23 @@ if __name__ == '__main__':
     x, y = load_data(args.train_file, args.feature_size)
     x1, y1 = load_data(args.test_file, args.feature_size)
 
-    start_ts = time.time()
-    if args.loss != 'log':
+    if args.loss == "logloss":
+        y = map(lambda v: 0 if v <= 0. else 1, y)
+        y1 = map(lambda v: 0 if v <= 0. else 1, y1)
+
+    if args.loss != 'logloss':
         est = GradientBoostingRegressor(n_estimators=args.iterations,
                                         learning_rate=args.shrinkage,
                                         max_depth=args.max_depth,
                                         random_state=0,
-                                        loss=args.loss).fit(x, y)
+                                        loss=args.loss)
     else:
-        est = GradientBoostingClassifier(loss='deviance',
-                                         n_estimators=args.iterations,
+        est = GradientBoostingClassifier(n_estimators=args.iterations,
                                          learning_rate=args.shrinkage,
                                          max_depth=args.max_depth)
 
+    start_ts = time.time()
+    est.fit(x,y)
     end_ts = time.time()
     print "time to fit: ", (end_ts - start_ts)
 
@@ -54,5 +58,5 @@ if __name__ == '__main__':
         print math.sqrt(mean_squared_error(y1, y1est))
     elif args.loss == 'lad':
         print mean_absolute_error(y1, y1est)
-    elif args.loss == 'log':
+    elif args.loss == 'logloss':
         print roc_auc_score(y1, y1est)
