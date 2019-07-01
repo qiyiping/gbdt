@@ -35,6 +35,7 @@ class GBDT {
   void Init(DataVector &d, size_t len);
 
   void UpdateGradient(DataVector *d, size_t samples, int iteration);
+  double GetLoss(DataVector *d, size_t samples, int i);
 
   void ReleaseTrees() {
     if (trees) {

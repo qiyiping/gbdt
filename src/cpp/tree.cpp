@@ -52,10 +52,6 @@ void RegressionTree::Fit(DataVector *data,
     return;
   }
 
-  // update gain
-  // if (gain[node->index] < g) {
-  //   gain[node->index] = g;
-  // }
   gain[node->index] += g;
 
   // increase feature cost if certain feature is used
@@ -66,12 +62,15 @@ void RegressionTree::Fit(DataVector *data,
   node->child[Node::LT] = new Node();
   node->child[Node::GE] = new Node();
 
-  Fit(&out[Node::LT], node->child[Node::LT], depth+1, gain);
-  Fit(&out[Node::GE], node->child[Node::GE], depth+1, gain);
+  Fit(&out[Node::LT], out[Node::LT].size(),
+      node->child[Node::LT], depth+1, gain);
+  Fit(&out[Node::GE], out[Node::GE].size(),
+      node->child[Node::GE], depth+1, gain);
 
   if (!out[Node::UNKNOWN].empty()) {
     node->child[Node::UNKNOWN] = new Node();
-    Fit(&out[Node::UNKNOWN], node->child[Node::UNKNOWN], depth+1, gain);
+    Fit(&out[Node::UNKNOWN], out[Node::UNKNOWN].size(),
+        node->child[Node::UNKNOWN], depth+1, gain);
   }
 }
 

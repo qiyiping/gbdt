@@ -208,12 +208,10 @@ class CmdOption {
 
   void Help() {
     auto iter = options_.begin();
+    std::cout << "OPTIONS:" << std::endl;
     for (; iter != options_.end(); ++iter) {
-      std::cout << "Name: " << iter->second.name << "\t"
-                << (iter->second.is_required? "Required": "Optional") <<"\t"
-                << "-" << iter->second.short_opt
-                << ", --" << iter->second.long_opt << "\t"
-                << "Value: ";
+      std::cout << "\t" << "-" << iter->second.short_opt << ", --" << iter->second.long_opt << "  <value>" << std::endl
+                << "\t\t" << (iter->second.is_required? "Required argument,": "Optional argument,") << "current value: ";
       if (iter->second.is_set) {
         switch (iter->second.type) {
           case OptionType::STRING:
@@ -226,7 +224,7 @@ class CmdOption {
             std::cout << iter->second.val.double_val;
             break;
           case OptionType::BOOL:
-            std::cout << iter->second.val.bool_val;
+            std::cout << (iter->second.val.bool_val? "true": "false");
             break;
           default:
             break;

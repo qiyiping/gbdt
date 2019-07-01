@@ -74,7 +74,7 @@ int main(int argc, char *argv[]) {
 
   Elapsed elapsed;
   gbdt.Fit(&d);
-  std::cout << "fit time: " << elapsed.Tell().ToMilliseconds() << std::endl;
+  std::cout << "training time: " << elapsed.Tell().ToMilliseconds() << " milliseconds" << std::endl;
   CleanDataVector(&d);
   FreeVector(&d);
 

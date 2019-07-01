@@ -55,7 +55,6 @@ class RegressionTree {
   void Fit(DataVector *data, size_t len);
 
   ValueType Predict(const Tuple &t) const;
-
   ValueType Predict(const Tuple &t, double *p) const;
 
   std::string Save() const;
@@ -64,11 +63,6 @@ class RegressionTree {
   double *GetGain() { return gain; }
 
  private:
-  void Fit(DataVector *data,
-           Node *node,
-           size_t depth,
-           double *gain) { Fit(data, data->size(), node, depth, gain); }
-
   void Fit(DataVector *data,
            size_t len,
            Node *node,

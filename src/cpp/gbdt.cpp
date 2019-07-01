@@ -76,18 +76,17 @@ void GBDT::Fit(DataVector *d) {
   Init(*d, d->size());
 
   for (size_t i = 0; i < conf.iterations; ++i) {
-    Elapsed elapsed;
-    std::cout  << "iteration: " << i << std::endl;
-
     if (samples < d->size()) {
       std::random_shuffle(d->begin(), d->end());
     }
 
+    Elapsed elapsed;
     UpdateGradient(d, samples, i);
-
     trees[i]->Fit(d, samples);
+    long fitting_time = elapsed.Tell().ToMilliseconds();
     if (conf.debug) {
-      std::cout << "iteration time: " << elapsed.Tell().ToMilliseconds() << std::endl;
+      std::cout  << "iteration: " << i << ", time: " << fitting_time << " milliseconds"
+                 << ", loss: " << GetLoss(d, samples, i) << std::endl;
     }
   }
 
@@ -152,6 +151,19 @@ void GBDT::UpdateGradient(DataVector *d, size_t samples, int i) {
     ValueType p = Predict(*(d->at(j)), i);
     conf.loss->UpdateGradient(d->at(j), p);
   }
+}
+
+double GBDT::GetLoss(DataVector *d, size_t samples, int i) {
+  double s = 0.0;
+#ifdef USE_OPENMP
+#pragma omp parallel for reduction(+:s)
+#endif
+  for (size_t j = 0; j < samples; ++j) {
+    ValueType p = Predict(*(d->at(j)), i);
+    s += conf.loss->GetLoss(*(d->at(j)), p);
+  }
+
+  return s/samples;
 }
 
 }
