@@ -1,5 +1,5 @@
 header_files = data.hpp math_util.hpp tree.hpp util.hpp config.hpp gbdt.hpp time.hpp auc.hpp loss.hpp
-object_files = data.o math_util.o tree.o util.o config.o gbdt.o auc.o time.o loss.o common_loss.o
+object_files = data.o math_util.o tree.o util.o config.o gbdt.o auc.o time.o loss.o common_loss.o metrics.o
 
 tests = data_unittest tree_unittest loss_unittest
 execs = gbdt_predict gbdt_train
@@ -37,6 +37,9 @@ time.o: $(header_files) time.cpp
 
 loss.o: $(header_files) loss.cpp
 	$(CXX) -c $(CXXFLAGS) loss.cpp
+
+metrics.o: $(header_files) metrics.cpp
+	$(CXX) -c $(CXXFLAGS) metrics.cpp
 
 common_loss.o: $(header_files) common_loss.cpp
 	$(CXX) -c $(CXXFLAGS) common_loss.cpp

@@ -19,10 +19,15 @@ min_leaf_size=0
 # options: "SquaredError(ls), LAD(lad), LogLoss(logloss)"
 loss="LogLoss"
 sklearn_loss="logloss"
+metric="auc"
 num_of_threads=16
 model="../data/train.txt.model"
 input="../data/test.txt"
 test_file="${input}"
+classification="false"
+if [ "$loss" == "LogLoss" ]; then
+    classification="true"
+fi
 
 echo -------------------
 echo start training
@@ -47,8 +52,8 @@ echo -------------------
 cmd="../src/cpp/gbdt_predict --model ${model} \
                              --feature_size ${feature_size} \
                              --input ${input} \
-                             --debug ${debug} \
-                             --loss ${loss}"
+                             --metric ${metric} \
+                             --classification ${classification}"
 time $cmd
 
 echo -------------------

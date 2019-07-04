@@ -7,10 +7,10 @@
 #include <iostream>
 #include <algorithm>
 
-#include "auc.hpp"
 #include "cmd_option.hpp"
 #include "loss.hpp"
 #include "common_loss.hpp"
+#include "metrics.hpp"
 
 using namespace gbdt;
 
@@ -18,10 +18,9 @@ int main(int argc, char *argv[]) {
   CmdOption opt;
   opt.AddOption("model", "m", "model", "");
   opt.AddOption("feature_size", "s", "feature_size", OptionType::INT, true);
-  opt.AddOption("loss", "l", "loss", "SquaredError");
   opt.AddOption("input", "i", "input", "");
-  opt.AddOption("debug", "d", "debug", false);
-  opt.AddOption("custom_loss_so", "c", "custom_loss_so", "");
+  opt.AddOption("metric", "t", "metric", "");
+  opt.AddOption("classification", "c", "classification", false);
 
   if (!opt.ParseOptions(argc, argv)) {
     opt.Help();
@@ -30,19 +29,9 @@ int main(int argc, char *argv[]) {
 
   Configure conf;
   opt.Get("feature_size", &conf.number_of_feature);
-  std::string loss_type;
-  opt.Get("loss", &loss_type);
-  std::string custom_loss_so;
-  opt.Get("custom_loss_so", &custom_loss_so);
-
-  LossFactory::GetInstance()->LoadSharedLib(custom_loss_so);
-  Objective *objective = LossFactory::GetInstance()->Create(loss_type);
-  if (!objective) {
-    LossFactory::GetInstance()->PrintAllCandidates();
-    return -1;
-  }
-  conf.loss.reset(objective);
   std::cout << conf.ToString() << std::endl;
+  bool classification;
+  opt.Get("classification", &classification);
   GBDT gbdt(conf);
 
   std::string model_path;
@@ -65,62 +54,31 @@ int main(int argc, char *argv[]) {
   LoadDataFromFile(input_file,
                    &d,
                    conf.number_of_feature,
-                   loss_type == "LogLoss");
+                   classification);
 
-  int debug;
-  opt.Get("debug", &debug);
-
-  DataVector::iterator iter = d.begin();
+  std::string metric;
+  opt.Get("metric", &metric);
 
   std::string predict_file = input_file + ".predict";
   std::ofstream predict_output(predict_file.c_str());
+  PredictVector pv;
 
-  Auc auc;
-  double sum = 0.0;
-  double cnt = 0.0;
-  double *gain = new double[conf.number_of_feature];
-
-  for ( ; iter != d.end(); ++iter) {
-    ValueType p = 0;
-
-    if (debug) {
-      std::fill_n(gain, conf.number_of_feature, 0.0);
-      p = gbdt.Predict(**iter, gain);
-    } else {
-      p = gbdt.Predict(**iter);
-    }
-
-    if (loss_type == "SquaredError") {
-      sum += Squared(p - (*iter)->label) * (*iter)->weight;
-      cnt += (*iter)->weight;
-    } else if (loss_type == "LogLoss") {
-      p = Logit(p);
-      auc.Add(p, (*iter)->label);
-    } else if (loss_type == "LAD") {
-      sum += Abs(p - (*iter)->label) * (*iter)->weight;
-      cnt += (*iter)->weight;
-    }
+  for (auto iter = d.begin() ; iter != d.end(); ++iter) {
+    ValueType p = gbdt.Predict(**iter);
 
     predict_output << "--------------------------" << std::endl
-                   << p << std::endl;
-    if (debug) {
-      for (int i = 0; i < conf.number_of_feature; ++i) {
-        predict_output << i << ":" << gain[i] << " ";
-      }
-      predict_output << std::endl;
-    }
-    predict_output <<(*iter)->ToString(conf.number_of_feature) << std::endl;
+                   << p << " " << (*iter)->ToString(conf.number_of_feature) << std::endl;
+    pv.push_back(p);
   }
 
-  delete[] gain;
-
-  if (loss_type == "SquaredError") {
-    std::cout << "rmse: " << std::sqrt(sum / cnt) << std::endl;
-  } else if (loss_type == "LogLoss") {
-    std::cout << "auc: " << auc.CalculateAuc() << std::endl;
-    auc.PrintConfusionTable();
-  } else if (loss_type == "LAD") {
-    std::cout << "mae: " << sum / cnt << std::endl;
+  if (metric == "auc") {
+    std::cout << metric << ": " << Metrics::AucScore(d, pv, d.size()) << std::endl;
+  } else if (metric == "logloss") {
+    std::cout << metric << ": " << Metrics::LogLoss(d, pv, d.size()) << std::endl;
+  } else if (metric == "mse") {
+    std::cout << metric << ": " << Metrics::MeanSquaredError(d, pv, d.size()) << std::endl;
+  } else if (metric == "mae") {
+    std::cout << metric << ": " << Metrics::MeanAbsoluteError(d, pv, d.size()) << std::endl;
   }
 
   CleanDataVector(&d);
