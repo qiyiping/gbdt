@@ -1,3 +1,5 @@
+// Author: qiyiping@gmail.com (Yiping Qi)
+
 #include "gbdt.hpp"
 #include <iostream>
 #include <fstream>
@@ -5,6 +7,7 @@
 #include "time.hpp"
 #include "cmd_option.hpp"
 #include "loss.hpp"
+#include "common_loss.hpp"
 
 #ifdef USE_OPENMP
 #include <omp.h>
@@ -25,6 +28,7 @@ int main(int argc, char *argv[]) {
   opt.AddOption("min_leaf_size", "S", "min_leaf_size", 0);
   opt.AddOption("loss", "l", "loss", "SquaredError");
   opt.AddOption("train_file", "F", "train_file", OptionType::STRING, true);
+  opt.AddOption("custom_loss_so", "c", "custom_loss_so", "");
 
   if (!opt.ParseOptions(argc, argv)) {
     opt.Help();
@@ -49,7 +53,10 @@ int main(int argc, char *argv[]) {
   opt.Get("min_leaf_size", &conf.min_leaf_size);
   std::string loss_type;
   opt.Get("loss", &loss_type);
+  std::string custom_loss_so;
+  opt.Get("custom_loss_so", &custom_loss_so);
 
+  LossFactory::GetInstance()->LoadSharedLib(custom_loss_so);
   Objective *objective = LossFactory::GetInstance()->Create(loss_type);
   if (!objective) {
     LossFactory::GetInstance()->PrintAllCandidates();

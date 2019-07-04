@@ -1,7 +1,6 @@
 // Author: qiyiping@gmail.com (Yiping Qi)
 
 #include "gbdt.hpp"
-#include "math_util.hpp"
 #include <fstream>
 #include <cassert>
 #include <cstring>
@@ -11,6 +10,7 @@
 #include "auc.hpp"
 #include "cmd_option.hpp"
 #include "loss.hpp"
+#include "common_loss.hpp"
 
 using namespace gbdt;
 
@@ -21,11 +21,29 @@ int main(int argc, char *argv[]) {
   opt.AddOption("loss", "l", "loss", "SquaredError");
   opt.AddOption("input", "i", "input", "");
   opt.AddOption("debug", "d", "debug", false);
+  opt.AddOption("custom_loss_so", "c", "custom_loss_so", "");
 
   if (!opt.ParseOptions(argc, argv)) {
     opt.Help();
     return -1;
   }
+
+  Configure conf;
+  opt.Get("feature_size", &conf.number_of_feature);
+  std::string loss_type;
+  opt.Get("loss", &loss_type);
+  std::string custom_loss_so;
+  opt.Get("custom_loss_so", &custom_loss_so);
+
+  LossFactory::GetInstance()->LoadSharedLib(custom_loss_so);
+  Objective *objective = LossFactory::GetInstance()->Create(loss_type);
+  if (!objective) {
+    LossFactory::GetInstance()->PrintAllCandidates();
+    return -1;
+  }
+  conf.loss.reset(objective);
+  std::cout << conf.ToString() << std::endl;
+  GBDT gbdt(conf);
 
   std::string model_path;
   opt.Get("model", &model_path);
@@ -39,21 +57,6 @@ int main(int argc, char *argv[]) {
   model.assign(std::istreambuf_iterator<char>(stream),
                std::istreambuf_iterator<char>());
 
-  Configure conf;
-  opt.Get("feature_size", &conf.number_of_feature);
-  std::string loss_type;
-  opt.Get("loss", &loss_type);
-  Objective *objective = LossFactory::GetInstance()->Create(loss_type);
-  if (!objective) {
-    LossFactory::GetInstance()->PrintAllCandidates();
-    return -1;
-  }
-
-  conf.loss.reset(objective);
-
-  std::cout << conf.ToString() << std::endl;
-
-  GBDT gbdt(conf);
   gbdt.Load(model);
 
   DataVector d;

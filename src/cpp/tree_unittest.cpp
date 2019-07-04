@@ -4,7 +4,7 @@
 #include <fstream>
 
 #include "loss.hpp"
-#include "math_util.hpp"
+#include "common_loss.hpp"
 
 #ifdef USE_OPENMP
 #include <omp.h>

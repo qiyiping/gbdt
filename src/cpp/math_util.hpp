@@ -1,7 +1,7 @@
 // Author: qiyiping@gmail.com (Yiping Qi)
 
-#ifndef _FITNESS_H_
-#define _FITNESS_H_
+#ifndef _MATH_UTIL_H_
+#define _MATH_UTIL_H_
 #include <cmath>
 #include <cassert>
 #include <algorithm>
@@ -73,4 +73,4 @@ T Median(std::vector<T> &data, size_t len, Compare comp) {
 
 }
 
-#endif /* _FITNESS_H_ */
+#endif /* _MATH_UTIL_H_ */
