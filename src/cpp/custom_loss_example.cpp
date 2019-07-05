@@ -36,7 +36,9 @@ double MyLoss::GetRegionPrediction(DataVector &d, size_t len) const {
     }
   }
 
-  if (k-1 >= 0) {
+  if (k >= len) {
+    r = d[k-1]->residual;
+  } else if (k-1 >= 0) {
     r = (d[k]->residual + d[k-1]->residual) / 2.0;
   } else {
     r = d[k]->residual;
