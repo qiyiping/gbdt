@@ -5,9 +5,9 @@ tests = data_unittest tree_unittest loss_unittest
 execs = gbdt_predict gbdt_train
 
 CXX = g++
-# CXXFLAGS = -Wall -Wextra -Wconversion -pedantic -fopenmp -O2 -std=c++11 -fPIC
-CXXFLAGS = -Wall -Wextra -Wconversion -pedantic -fopenmp -O2 -DUSE_OPENMP -std=c++11 -fPIC
-# CXXFLAGS = -Wall -fopenmp -DUSE_OPENMP -std=c++11 -g -O0 -fPIC
+# CXXFLAGS = -Wall -Wextra -Wconversion -pedantic -O2 -std=c++11 -fPIC
+# CXXFLAGS = -Wall -Wextra -Wconversion -pedantic -fopenmp -O2 -DUSE_OPENMP -std=c++11 -fPIC
+CXXFLAGS = -Wall -Wextra -Wconversion -pedantic -std=c++11 -g -O0 -fPIC
 
 all: libgbdt.a $(tests) $(execs) libcustom_loss_example.so
 
@@ -54,7 +54,7 @@ tree_unittest: libgbdt.a tree_unittest.cpp
 	$(CXX) $(CXXFLAGS) -o tree_unittest tree_unittest.cpp common_loss.o libgbdt.a -ldl
 
 loss_unittest: libgbdt.a loss_unittest.cpp
-	$(CXX) $(CXXFLAGS) -o loss_unittest loss_unittest.cpp libgbdt.a common_loss.o common_loss.o -ldl
+	$(CXX) $(CXXFLAGS) -o loss_unittest loss_unittest.cpp libgbdt.a -ldl
 
 gbdt_train: libgbdt.a gbdt_train.cpp cmd_option.hpp
 	$(CXX) $(CXXFLAGS) -o gbdt_train gbdt_train.cpp libgbdt.a common_loss.o -ldl
