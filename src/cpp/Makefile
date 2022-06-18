@@ -5,9 +5,14 @@ tests = data_unittest tree_unittest loss_unittest
 execs = gbdt_predict gbdt_train
 
 CXX = g++
-# CXXFLAGS = -Wall -Wextra -Wconversion -pedantic -O2 -std=c++11 -fPIC
+
+CXXFLAGS = -Wall -Wextra -Wconversion -pedantic -O2 -std=c++11 -fPIC
+
+# use openmp:
 # CXXFLAGS = -Wall -Wextra -Wconversion -pedantic -fopenmp -O2 -DUSE_OPENMP -std=c++11 -fPIC
-CXXFLAGS = -Wall -Wextra -Wconversion -pedantic -std=c++11 -g -O0 -fPIC
+
+# debug only:
+# CXXFLAGS = -Wall -Wextra -Wconversion -pedantic -std=c++11 -g -O0 -fPIC
 
 all: libgbdt.a $(tests) $(execs) libcustom_loss_example.so
 
@@ -63,4 +68,4 @@ libcustom_loss_example.so: custom_loss_example.hpp loss.hpp custom_loss_example.
 	$(CXX) $(CXXFLAGS) -shared loss.o math_util.o custom_loss_example.cpp -o libcustom_loss_example.so -ldl
 
 clean:
-	rm $(object_files) $(all)
+	rm $(object_files) libgbdt.a $(tests) $(execs) libcustom_loss_example.so

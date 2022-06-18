@@ -18,7 +18,6 @@ debug="true"
 min_leaf_size=0
 # options: "SquaredError(ls), LAD(lad), LogLoss(logloss)"
 loss="LogLoss"
-sklearn_loss="logloss"
 metric="auc"
 num_of_threads=16
 model="../data/train.txt.model"
@@ -54,18 +53,4 @@ cmd="../src/cpp/gbdt_predict --model ${model} \
                              --input ${input} \
                              --metric ${metric} \
                              --classification ${classification}"
-time $cmd
-
-echo -------------------
-echo sklearn test
-echo -------------------
-cmd="python ./sklearn_gbrt_test.py \
-     --feature_size ${feature_size} \
-     --train_file ${train_file} \
-     --test_file ${test_file} \
-     --max_depth ${max_depth} \
-     --iterations ${iterations} \
-     --shrinkage ${shrinkage} \
-     --loss ${sklearn_loss}"
-
 time $cmd

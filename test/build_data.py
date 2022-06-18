@@ -1,3 +1,4 @@
+from __future__ import print_function
 import random
 import math
 
@@ -10,4 +11,4 @@ for i in range(0, 100000):
 
     v = 1.0/(1+math.exp(-w)) - 0.5
 
-    print '%s 1 0:%s 1:%s 2:%s' % (v, x, y, z,)
+    print('%s 1 0:%s 1:%s 2:%s' % (v, x, y, z,))
