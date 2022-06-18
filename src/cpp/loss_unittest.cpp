@@ -1,5 +1,4 @@
 #include "loss.hpp"
-#include "common_loss.hpp"
 #include <iostream>
 
 #include "cmd_option.hpp"

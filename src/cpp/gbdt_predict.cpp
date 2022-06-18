@@ -9,7 +9,6 @@
 
 #include "cmd_option.hpp"
 #include "loss.hpp"
-#include "common_loss.hpp"
 #include "metrics.hpp"
 
 using namespace gbdt;

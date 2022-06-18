@@ -7,7 +7,6 @@
 #include "time.hpp"
 #include "cmd_option.hpp"
 #include "loss.hpp"
-#include "common_loss.hpp"
 
 #ifdef USE_OPENMP
 #include <omp.h>
