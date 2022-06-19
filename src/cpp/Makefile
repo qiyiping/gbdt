@@ -6,13 +6,18 @@ execs = gbdt_predict gbdt_train
 
 CXX = g++
 
-CXXFLAGS = -Wall -Wextra -Wconversion -pedantic -O2 -std=c++11 -fPIC
+# CXXFLAGS = -Wall -Wextra -Wconversion -pedantic -O2 -std=c++11 -fPIC
+# LDFLAGS = -ldl
 
 # use openmp:
 # CXXFLAGS = -Wall -Wextra -Wconversion -pedantic -fopenmp -O2 -DUSE_OPENMP -std=c++11 -fPIC
+# for OSX users, please install `libomp' first.
+CXXFLAGS = -Wall -Wextra -Wconversion -pedantic -Xclang -fopenmp -O2 -DUSE_OPENMP -std=c++11 -fPIC
+LDFLAGS = -ldl -lomp
 
 # debug only:
 # CXXFLAGS = -Wall -Wextra -Wconversion -pedantic -std=c++11 -g -O0 -fPIC
+# LDFLAGS = -ldl
 
 all: libgbdt.a $(tests) $(execs) libcustom_loss_example.so
 
@@ -53,19 +58,19 @@ data_unittest: libgbdt.a data_unittest.cpp
 	$(CXX) $(CXXFLAGS) -o data_unittest data_unittest.cpp libgbdt.a
 
 tree_unittest: libgbdt.a tree_unittest.cpp
-	$(CXX) $(CXXFLAGS) -o tree_unittest tree_unittest.cpp libgbdt.a -ldl
+	$(CXX) $(CXXFLAGS) -o tree_unittest tree_unittest.cpp libgbdt.a $(LDFLAGS)
 
 loss_unittest: libgbdt.a loss_unittest.cpp
-	$(CXX) $(CXXFLAGS) -o loss_unittest loss_unittest.cpp libgbdt.a -ldl
+	$(CXX) $(CXXFLAGS) -o loss_unittest loss_unittest.cpp libgbdt.a $(LDFLAGS)
 
 gbdt_train: libgbdt.a gbdt_train.cpp cmd_option.hpp
-	$(CXX) $(CXXFLAGS) -o gbdt_train gbdt_train.cpp libgbdt.a -ldl
+	$(CXX) $(CXXFLAGS) -o gbdt_train gbdt_train.cpp libgbdt.a $(LDFLAGS)
 
 gbdt_predict: libgbdt.a gbdt_predict.cpp cmd_option.hpp
-	$(CXX) $(CXXFLAGS) -o gbdt_predict gbdt_predict.cpp libgbdt.a -ldl
+	$(CXX) $(CXXFLAGS) -o gbdt_predict gbdt_predict.cpp libgbdt.a $(LDFLAGS)
 
 libcustom_loss_example.so: custom_loss_example.hpp loss.hpp custom_loss_example.cpp
-	$(CXX) $(CXXFLAGS) -shared loss.o math_util.o custom_loss_example.cpp -o libcustom_loss_example.so -ldl
+	$(CXX) $(CXXFLAGS) -shared loss.o math_util.o custom_loss_example.cpp -o libcustom_loss_example.so $(LDFLAGS)
 
 clean:
 	rm $(object_files) libgbdt.a $(tests) $(execs) libcustom_loss_example.so

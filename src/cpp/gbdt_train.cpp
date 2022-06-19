@@ -36,7 +36,7 @@ int main(int argc, char *argv[]) {
 
 #ifdef USE_OPENMP
   int threads_wanted;
-  opt.Get("num_of_threads", &threads_wanted);
+  opt.Get("threads", &threads_wanted);
   omp_set_num_threads(threads_wanted);
 #endif
   std::srand ( unsigned ( ::time(0) ) );

@@ -5,11 +5,6 @@
 #include <algorithm>
 #include <iostream>
 
-#ifdef USE_OPENMP
-#include <parallel/algorithm>  // openmp
-#endif
-
-
 namespace {
 struct ResidualCompare {
   bool operator () (const gbdt::Tuple *t1, const gbdt::Tuple *t2) {

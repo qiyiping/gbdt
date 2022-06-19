@@ -10,10 +10,6 @@
 #include <algorithm>
 #include "time.hpp"
 
-#ifdef USE_OPENMP
-#include <parallel/algorithm>  // openmp
-#endif
-
 namespace gbdt {
 ValueType GBDT::Predict(const Tuple &t, size_t n) const {
   if (!trees)

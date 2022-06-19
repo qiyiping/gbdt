@@ -19,7 +19,7 @@ min_leaf_size=0
 # options: "SquaredError(ls), LAD(lad), LogLoss(logloss)"
 loss="LogLoss"
 metric="auc"
-num_of_threads=16
+num_of_threads=4
 model="../data/train.txt.model"
 input="../data/test.txt"
 test_file="${input}"
@@ -41,7 +41,7 @@ cmd="../src/cpp/gbdt_train --feature_size ${feature_size} \
                            --debug ${debug} \
                            --min_leaf_size ${min_leaf_size} \
                            --loss ${loss} \
-                           --num_of_threads ${num_of_threads}"
+                           --threads ${num_of_threads}"
 
 time $cmd
 
